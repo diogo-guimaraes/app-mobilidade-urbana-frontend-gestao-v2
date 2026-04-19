@@ -27,9 +27,9 @@
           </q-btn>
           <q-btn round flat>
             <q-avatar size="26px">
-              <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
+              <img :src="user.thumbnail_host_path" />
             </q-avatar>
-            <q-tooltip>Account</q-tooltip>
+            <q-tooltip>{{ user.name }}</q-tooltip>
           </q-btn>
         </div>
       </q-toolbar>
@@ -121,9 +121,9 @@
 </template>
 
 <script>
-import { ref } from 'vue'
 import { fabYoutube } from '@quasar/extras/fontawesome-v6'
-
+import { useAuthStore } from 'src/stores/auth'
+import { ref, computed } from 'vue'
 export default {
   name: 'MyLayout',
 
@@ -135,12 +135,14 @@ export default {
       leftDrawerOpen.value = !leftDrawerOpen.value
     }
 
-    return {
-      fabYoutube,
+    const authStore = useAuthStore()
+    const user = computed(() => authStore.user)
 
+    return {
+      user,
+      fabYoutube,
       leftDrawerOpen,
       search,
-
       toggleLeftDrawer,
 
       links1: [
