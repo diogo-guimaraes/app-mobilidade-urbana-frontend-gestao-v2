@@ -1,37 +1,52 @@
-import { defineRouter } from '#q-app/wrappers'
+import { route } from "quasar/wrappers";
 import {
   createRouter,
   createMemoryHistory,
   createWebHistory,
   createWebHashHistory,
-} from 'vue-router'
-import routes from './routes'
+} from "vue-router";
+import routes from "./routes";
+import { useAuthStore } from "src/stores/auth";
 
-/*
- * If not building with SSR mode, you can
- * directly export the Router instantiation;
- *
- * The function below can be async too; either use
- * async/await or return a Promise which resolves
- * with the Router instance.
- */
-
-export default defineRouter((/* { store, ssrContext } */) => {
+export default route(function () {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
-    : process.env.VUE_ROUTER_MODE === 'history'
+    : process.env.VUE_ROUTER_MODE === "history"
       ? createWebHistory
-      : createWebHashHistory
+      : createWebHashHistory;
 
   const Router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
 
-    // Leave this as is and make changes in quasar.conf.js instead!
-    // quasar.conf.js -> build -> vueRouterMode
-    // quasar.conf.js -> build -> publicPath
     history: createHistory(process.env.VUE_ROUTER_BASE),
-  })
+  });
 
-  return Router
-})
+  Router.beforeEach(async (to, from, next) => {
+    const authStore = useAuthStore();
+
+    const token = localStorage.getItem("token");
+    if (token && !authStore.user) {
+      try {
+        await authStore.fetchUser();
+      } catch (e) {
+        console.log(e, 'e')
+        console.warn("Sessão expirada. Redirecionando para login.");
+        authStore.logout();
+      }
+    }
+
+    const isAuthenticated = authStore.isAuthenticated;
+
+    if (to.meta.requiresAuth && !isAuthenticated) {
+      next("/login");  // Mude de "/" para "/login"
+    } else if (to.path === "/" && isAuthenticated) {
+      next("/dashboard");
+    } else {
+      next();
+    }
+  });
+
+
+  return Router;
+});

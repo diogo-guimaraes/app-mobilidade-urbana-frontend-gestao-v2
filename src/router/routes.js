@@ -1,7 +1,16 @@
 const routes = [
   {
-    path: '/',
+    path: "/",
+    redirect: "/login",  // Redireciona automaticamente para login
+  },
+  {
+    path: "/login",
+    component: () => import("src/pages/LoginUsuario.vue"),
+  },
+  {
+    path: '/dashboard',
     component: () => import('layouts/MainLayout.vue'),
+    meta: { requiresAuth: true },
     children: [{ path: '', component: () => import('pages/IndexPage.vue') }],
   },
 
