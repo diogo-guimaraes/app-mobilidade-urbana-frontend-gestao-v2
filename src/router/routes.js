@@ -13,6 +13,12 @@ const routes = [
     meta: { requiresAuth: true },
     children: [{ path: '', component: () => import('pages/IndexPage.vue') }],
   },
+  {
+    path: '/usuarios',
+    component: () => import('layouts/MainLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [{ path: '', component: () => import('pages/ListaUsuarios.vue') }],
+  },
 
   // Always leave this as last one,
   // but you can also remove it

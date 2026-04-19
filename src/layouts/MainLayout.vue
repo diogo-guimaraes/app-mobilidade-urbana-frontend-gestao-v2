@@ -38,7 +38,7 @@
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered class="bg-grey-2" :width="240">
       <q-scroll-area class="fit">
         <q-list padding>
-          <q-item v-for="link in links1" :key="link.text" v-ripple clickable>
+          <q-item v-for="link in links1" :key="link.text" v-ripple clickable :to="link.to">
             <q-item-section avatar>
               <q-icon color="grey" :name="link.icon" />
             </q-item-section>
@@ -49,7 +49,16 @@
 
           <q-separator class="q-my-md" />
 
-          <q-item v-for="link in links2" :key="link.text" v-ripple clickable>
+          <q-item v-ripple clickable>
+            <q-item-section avatar>
+              <q-icon color="grey" name="exit_to_app" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Sair</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <!-- <q-item v-for="link in links2" :key="link.text" v-ripple clickable>
             <q-item-section avatar>
               <q-icon color="grey" :name="link.icon" />
             </q-item-section>
@@ -109,7 +118,7 @@
                 {{ button.text }}
               </a>
             </div>
-          </div>
+          </div> -->
         </q-list>
       </q-scroll-area>
     </q-drawer>
@@ -146,9 +155,9 @@ export default {
       toggleLeftDrawer,
 
       links1: [
-        { icon: 'home', text: 'Home' },
-        { icon: 'whatshot', text: 'Trending' },
-        { icon: 'subscriptions', text: 'Subscriptions' },
+        { icon: 'groups_2', text: 'Usuarios', to: '/usuarios' },
+        { icon: 'help_center', text: 'Central de ajuda', to: '/usuarios1' },
+        { icon: 'settings', text: 'Configurações', to: '/usuarios2' },
       ],
       links2: [
         { icon: 'folder', text: 'Library' },
