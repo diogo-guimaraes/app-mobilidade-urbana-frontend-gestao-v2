@@ -1,7 +1,8 @@
 const routes = [
   {
     path: "/",
-    redirect: "/login",  // Redireciona automaticamente para login
+    // REMOVA esta linha: redirect: "/login",
+    // Vamos tratar o redirecionamento no beforeEach
   },
   {
     path: "/login",
@@ -17,11 +18,8 @@ const routes = [
     path: '/usuarios',
     component: () => import('layouts/MainLayout.vue'),
     meta: { requiresAuth: true },
-    children: [{ path: '', component: () => import('pages/ListaUsuarios.vue') }],
+    children: [{ path: '', component: () => import('src/pages/usuarios/ListaUsuarios.vue') }],
   },
-
-  // Always leave this as last one,
-  // but you can also remove it
   {
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue'),

@@ -18,11 +18,10 @@ export default route(function () {
   const Router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
-
     history: createHistory(process.env.VUE_ROUTER_BASE),
   });
 
-  Router.beforeEach(async (to, from, next) => {
+  Router.beforeEach(async (to) => {
     const authStore = useAuthStore();
 
     const token = localStorage.getItem("token");
@@ -30,7 +29,7 @@ export default route(function () {
       try {
         await authStore.fetchUser();
       } catch (e) {
-        console.log(e, 'e')
+        console.log(e, 'e');
         console.warn("Sessão expirada. Redirecionando para login.");
         authStore.logout();
       }
@@ -38,15 +37,29 @@ export default route(function () {
 
     const isAuthenticated = authStore.isAuthenticated;
 
+    // REGRA 1: Se NÃO está autenticado e tenta acessar rota protegida
     if (to.meta.requiresAuth && !isAuthenticated) {
-      next("/login");  // Mude de "/" para "/login"
-    } else if (to.path === "/" && isAuthenticated) {
-      next("/dashboard");
-    } else {
-      next();
+      return "/login";
     }
-  });
 
+    // REGRA 2: Se ESTÁ autenticado e tenta acessar /login
+    if (to.path === "/login" && isAuthenticated) {
+      return "/dashboard";
+    }
+
+    // REGRA 3: Se ESTÁ autenticado e tenta acessar a raiz (/)
+    if (to.path === "/" && isAuthenticated) {
+      return "/dashboard";
+    }
+
+    // REGRA 4: Se NÃO está autenticado e tenta acessar a raiz (/)
+    if (to.path === "/" && !isAuthenticated) {
+      return "/login";
+    }
+
+    // REGRA 5: Caso contrário, permite a navegação
+    return true;
+  });
 
   return Router;
 });
