@@ -160,6 +160,12 @@
             <q-card-actions class="q-mt-md" align="center">
               <q-btn flat label="Cancelar" v-close-popup />
               <q-btn type="submit" color="primary" icon-right="save" label="Salvar" />
+              <q-btn
+                @click="preecherDados"
+                color="green"
+                icon-right="edit"
+                label="Preencher dados"
+              />
             </q-card-actions>
           </q-form>
         </q-card-section>
@@ -268,12 +274,20 @@ function onBeforeShow() {
 }
 
 function imageSelected(e) {
-  image.value = e.target.files[0]
+  const file = e.target.files?.[0]
+
+  if (!file) {
+    console.warn('Nenhuma imagem selecionada')
+    return
+  }
+
+  image.value = file
+
   const reader = new FileReader()
-  reader.readAsDataURL(image.value)
   reader.onload = (ev) => {
     imagemProfile.value = ev.target.result
   }
+  reader.readAsDataURL(file)
 }
 
 function removerImagem() {
@@ -283,6 +297,18 @@ function removerImagem() {
 
 function onSubmit() {
   cadastrarUsuario()
+}
+
+function preecherDados() {
+  Object.assign(usuario, {
+    name: 'name',
+    telefone: '69981400661',
+    cpf: '11149897291',
+    data_nascimento: '21/11/1992',
+    email: 'mail@mail.com',
+    password: '123',
+    type: 'motorista',
+  })
 }
 
 function cadastrarUsuario() {
@@ -313,7 +339,11 @@ function cadastrarUsuario() {
   })
 
   api
-    .post('/users', data)
+    .post('/users', data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
     .then((res) => {
       $q.notify({ type: 'positive', message: res.data.message })
       emit('created')
