@@ -16,8 +16,10 @@ export const useAuthStore = defineStore("auth", () => {
   // Função para buscar dados do usuário logado
   async function fetchUser() {
     try {
-      const response = await api.get("/users?filtro=usuarioAuth");
-      user.value = response.data.data.usuario;
+      const response = await api.get("/usuario-logado");
+      console.log(response.data, 'response');
+      user.value = response.data;
+      console.log('user', user);
       return response;
     } catch (error) {
       logout();
@@ -27,7 +29,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   // Função de login
   async function login(credentials) {
-    const response = await api.post("/login", credentials);
+    const response = await api.post("auth/login", credentials);
     const newToken = response.data.token;
 
     // Guarda o token
