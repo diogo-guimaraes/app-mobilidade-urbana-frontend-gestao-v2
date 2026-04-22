@@ -54,6 +54,7 @@
                     label="Nome completo *"
                     outlined
                     dense
+                    :rules="[(val) => val.length >= 3 || 'Campo obrigatório']"
                   />
                 </q-item>
               </div>
@@ -67,6 +68,7 @@
                     outlined
                     dense
                     mask="(##) ##### - ####"
+                    :rules="[(val) => val.length >= 17 || 'Campo obrigatório']"
                   />
                 </q-item>
               </div>
@@ -80,6 +82,7 @@
                     outlined
                     dense
                     mask="###.###.###-##"
+                    :rules="[(val) => val.length >= 14 || 'Campo obrigatório']"
                   />
                 </q-item>
               </div>
@@ -88,12 +91,29 @@
                 <q-item>
                   <q-input
                     class="full-width"
-                    v-model="usuario.data_nascimento"
                     label="Data Nascimento"
-                    outlined
                     dense
                     mask="##/##/####"
-                  />
+                    outlined
+                    v-model="usuario.data_nascimento"
+                    :rules="[(data_inicial) => validateDateFormat(data_inicial)]"
+                  >
+                    <template v-slot:append>
+                      <q-icon name="event" class="cursor-pointer">
+                        <q-popup-proxy
+                          ref="qDateProxy"
+                          transition-show="scale"
+                          transition-hide="scale"
+                        >
+                          <q-date
+                            v-model="usuario.data_nascimento"
+                            mask="DD/MM/YYYY"
+                            @input="() => inputData()"
+                          ></q-date>
+                        </q-popup-proxy>
+                      </q-icon>
+                    </template>
+                  </q-input>
                 </q-item>
               </div>
 
@@ -105,10 +125,10 @@
                     label="Email *"
                     outlined
                     dense
+                    :rules="[(val) => val.length >= 1 || 'Campo obrigatório']"
                   />
                 </q-item>
               </div>
-              {{ usuario }}
               <div class="col-md-6 col-12">
                 <q-item>
                   <q-select
@@ -118,6 +138,7 @@
                     label="Usuario"
                     outlined
                     dense
+                    :rules="[(val) => !!val || 'Campo obrigatório']"
                   />
                 </q-item>
               </div>
@@ -131,6 +152,7 @@
                     type="password"
                     outlined
                     dense
+                    :rules="[(val) => val.length >= 3 || 'Campo obrigatório']"
                   />
                 </q-item>
               </div>
@@ -189,6 +211,41 @@ const usuario = reactive({
 // METHODS
 function quandoDialogFechar() {
   limparForm()
+}
+
+function validateDateFormat(date) {
+  const regex = /^\d{2}\/\d{2}\/\d{4}$/
+
+  if (!date) return true
+
+  if (!regex.test(date)) {
+    return 'Formato de data inválido (DD/MM/YYYY)'
+  }
+
+  const [day, month, year] = date.split('/').map(Number)
+
+  // Verificar se o dia está no intervalo de 1 a 31 (dependendo do mês)
+  if (day < 1 || day > 31) {
+    return 'Dia inválido'
+  }
+
+  // Verificar se o mês está no intervalo de 1 a 12
+  if (month < 1 || month > 12) {
+    return 'Mês inválido'
+  }
+
+  // Verificar se o ano é maior que 0 (não negativo)
+  if (year <= 0) {
+    return 'Ano inválido'
+  }
+
+  // Verificar se o dia é válido para o mês (considerando anos bissextos)
+  const daysInMonth = new Date(year, month, 0).getDate()
+  if (day > daysInMonth) {
+    return 'Dia inválido para o mês selecionado'
+  }
+
+  return true
 }
 
 function limparForm() {
