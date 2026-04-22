@@ -1,115 +1,132 @@
 <template>
   <q-page class="q-pa-md">
-    <div v-if="usuarios.success">
-      <CriarUsuario @created="onRequest" v-model="dialog.cadastrar" />
-      <q-card>
-        <q-table
-          :rows="usuarios.data"
-          :columns="columns"
-          row-key="id"
-          v-model:pagination="pagination"
-          :grid="grid"
-          :loading="loading"
-          @request="onRequest"
-        >
-          <!-- TOPO -->
-          <template #top>
-            <q-space />
+    <CriarUsuario @created="onRequest" v-model="dialog.cadastrar" />
+    <MostrarUsuario v-model="dialog.visualizar" />
+    <q-card>
+      <q-table
+        :rows="usuarios.data"
+        :columns="columns"
+        row-key="id"
+        :pagination="pagination"
+        :grid="grid"
+        :loading="loading"
+        @request="onRequest"
+      >
+        <!-- TOPO -->
+        <template #top>
+          <q-space />
 
-            <q-input
-              class="full-width"
-              filled
-              dense
-              debounce="300"
-              v-model="search"
-              placeholder="Pesquisar"
-              @keyup.enter="buscarDados"
-            >
-              <template #before>
-                <q-btn icon="person_add_alt" color="primary" @click="dialog.cadastrar = true" />
-              </template>
+          <q-input
+            class="full-width"
+            filled
+            dense
+            debounce="300"
+            v-model="search"
+            placeholder="Pesquisar"
+            @keyup.enter="buscarDados"
+          >
+            <template #before>
+              <q-btn icon="person_add_alt" color="primary" @click="dialog.cadastrar = true" />
+            </template>
 
-              <template #append>
-                <q-icon name="close" class="cursor-pointer" @click="clearSearch" />
-              </template>
+            <template #append>
+              <q-icon name="close" class="cursor-pointer" @click="clearSearch" />
+            </template>
 
-              <template #after>
-                <q-btn round dense flat icon="search" @click="buscarDados" />
+            <template #after>
+              <q-btn round dense flat icon="search" @click="buscarDados" />
 
-                <q-btn flat round dense :icon="grid ? 'list' : 'grid_on'" @click="toggleGrid" />
-              </template>
-            </q-input>
-          </template>
+              <q-btn flat round dense :icon="grid ? 'list' : 'grid_on'" @click="toggleGrid" />
+            </template>
+          </q-input>
+        </template>
 
-          <!-- LISTA -->
-          <template #body="props">
-            <q-tr :props="props">
-              <q-td key="id">{{ props.row.id }}</q-td>
+        <!-- LISTA -->
+        <template #body="props">
+          <q-tr :props="props">
+            <q-td key="id">{{ props.row.id }}</q-td>
 
-              <q-td key="nome">
-                <div class="flex items-center q-gutter-sm">
-                  <q-avatar v-if="props.row.image_host_path">
-                    <img :src="props.row.image_host_path" />
+            <q-td key="nome">
+              <q-item>
+                <q-item-section top avatar>
+                  <q-avatar>
+                    <img :src="props.row.foto" />
                   </q-avatar>
+                  <q-badge class="q-mt-sm" :label="props.row.type" color="grey" />
+                </q-item-section>
 
-                  <q-avatar v-else color="primary" text-color="white">
-                    {{ props.row.name?.charAt(0) }}
+                <q-item-section>
+                  <q-item-label class="text-bold"> {{ props.row.name }}</q-item-label>
+                  <q-item-label class="estilo-coluna">
+                    {{ props.row.email }}
+                    <div>CPF: {{ props.row.cpf }}</div>
+                    <div>TEL: {{ props.row.telefone }}</div>
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-td>
+
+            <q-td key="status">
+              <q-badge :color="badgeColor(props.row.status)">
+                {{ props.row.status }}
+              </q-badge>
+            </q-td>
+
+            <q-td key="acoes" align="center">
+              <!-- <q-btn flat dense icon="visibility" @click="openEditar(props.row.id)" />
+              <q-btn flat dense icon="delete" @click="arquivarUsuario(props.row.id)" /> -->
+              <q-btn @click="dialog.visualizar = true" dense flat icon="visibility">
+                <template v-slot:loading>
+                  <q-spinner-hourglass />
+                </template>
+              </q-btn>
+
+              <q-btn flat dense icon="list_alt">
+                <q-tooltip transition-show="flip-right" transition-hide="flip-left">
+                  Documentos
+                </q-tooltip>
+              </q-btn>
+              <q-btn dense flat icon="directions_car">
+                <q-tooltip transition-show="flip-right" transition-hide="flip-left">
+                  Veículos
+                </q-tooltip>
+              </q-btn>
+
+              <q-btn dense flat icon="delete">
+                <q-tooltip transition-show="flip-right" transition-hide="flip-left">
+                  arquivar
+                </q-tooltip>
+              </q-btn>
+            </q-td>
+          </q-tr>
+        </template>
+
+        <!-- GRID -->
+        <template #item="props">
+          <div class="q-pa-xs col-xs-12 col-sm-6 col-md-3">
+            <q-card>
+              <q-item clickable @click="openEditar(props.row.id)">
+                <q-item-section avatar>
+                  <q-avatar size="70px">
+                    <img v-if="props.row.foto" :src="props.row.foto" />
+                    <span v-else>
+                      {{ props.row.name?.charAt(0) }}
+                    </span>
                   </q-avatar>
+                </q-item-section>
 
-                  <div>
-                    <div>{{ props.row.name }}</div>
-                    <div class="text-caption">
-                      {{ props.row.skill }}
-                    </div>
-                  </div>
-                </div>
-              </q-td>
-
-              <q-td key="email">
-                {{ props.row.email }}
-              </q-td>
-
-              <q-td key="categoria_grupo">
-                {{ props.row.categoria_grupo?.nome }}
-              </q-td>
-
-              <q-td key="acoes" align="center">
-                <q-btn flat dense icon="visibility" @click="openEditar(props.row.id)" />
-                <q-btn flat dense icon="delete" @click="arquivarUsuario(props.row.id)" />
-              </q-td>
-            </q-tr>
-          </template>
-
-          <!-- GRID -->
-          <template #item="props">
-            <div class="q-pa-xs col-xs-12 col-sm-6 col-md-3">
-              <q-card>
-                <q-item clickable @click="openEditar(props.row.id)">
-                  <q-item-section avatar>
-                    <q-avatar size="70px">
-                      <img
-                        v-if="props.row.thumbnail_host_path"
-                        :src="props.row.thumbnail_host_path"
-                      />
-                      <span v-else>
-                        {{ props.row.name?.charAt(0) }}
-                      </span>
-                    </q-avatar>
-                  </q-item-section>
-
-                  <q-item-section>
-                    <q-item-label>{{ props.row.name }}</q-item-label>
-                    <q-item-label caption>
-                      {{ props.row.email }}
-                    </q-item-label>
-                  </q-item-section>
-                </q-item>
-              </q-card>
-            </div>
-          </template>
-        </q-table>
-      </q-card>
-    </div>
+                <q-item-section>
+                  <q-item-label>{{ props.row.name }}</q-item-label>
+                  <q-item-label caption>
+                    {{ props.row.email }}
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-card>
+          </div>
+        </template>
+      </q-table>
+    </q-card>
   </q-page>
 </template>
 
@@ -117,6 +134,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { api } from 'boot/axios'
 import CriarUsuario from 'src/components/usuarios/CriarUsuario.vue'
+import MostrarUsuario from 'src/components/usuarios/MostrarUsuario.vue'
 
 // STATES
 const usuarios = ref({
@@ -131,26 +149,32 @@ const grid = ref(false)
 const dialog = reactive({
   editarUsuario: false,
   cadastrar: false,
+  visualizar: false,
 })
 
 const usuarioId = ref(null)
 
 const pagination = ref({
   page: 1,
-  rowsPerPage: 8,
-  rowsNumber: 0,
+  rowsPerPage: 5,
+  // rowsNumber: 5,
 })
 
 // COLUMNS
 const columns = [
-  { name: 'id', label: 'ID', field: 'id' },
-  { name: 'nome', label: 'Nome', field: 'name' },
-  { name: 'email', label: 'Email', field: 'email' },
-  { name: 'categoria_grupo', label: 'Grupo', field: 'categoria_grupo' },
-  { name: 'acoes', label: 'Ações', field: 'acoes', align: 'center' },
+  { name: 'id', label: 'ID', field: 'id', align: 'left' },
+  { name: 'nome', label: 'Nome', field: 'name', align: 'left' },
+  { name: 'status', label: 'Status', field: 'status', align: 'left' },
+  { name: 'acoes', label: 'Ações', align: 'center' },
 ]
 
 // METHODS
+const badgeColor = (status) => {
+  if (status === 'aprovado') return 'green'
+  if (status === 'suspenso') return 'orange'
+  if (status === 'banido') return 'red'
+}
+
 const toggleGrid = () => {
   grid.value = !grid.value
 }
@@ -166,20 +190,19 @@ const openEditar = (id) => {
   dialog.editarUsuario = true
 }
 
-const buscarDados = async () => {
+const buscarDados = async (props) => {
   loading.value = true
-
+  const { page, rowsPerPage } = props ? props.pagination : pagination
   try {
     const response = await api.get('/users', {
       params: {
-        filtro: 'usuariosRegistro',
         search: search.value || '',
-        page: pagination.value.page,
-        rowsPerPage: pagination.value.rowsPerPage,
+        page: page,
+        rowsPerPage: rowsPerPage,
       },
     })
 
-    const data = response.data.data
+    const data = response.data
 
     usuarios.value = {
       success: true,
@@ -195,22 +218,9 @@ const buscarDados = async () => {
     loading.value = false
   }
 }
-
 const onRequest = async (props) => {
-  pagination.value.page = props.pagination.page
-  pagination.value.rowsPerPage = props.pagination.rowsPerPage
-  await buscarDados()
-}
-
-const arquivarUsuario = async (id) => {
-  if (!confirm('Deseja arquivar o usuário?')) return
-
-  try {
-    await api.delete(`/users/${id}/arquivar`)
-    buscarDados()
-  } catch (error) {
-    console.error(error)
-  }
+  console.log(props, 'props')
+  await buscarDados(props)
 }
 
 // LIFECYCLE
@@ -220,6 +230,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.estilo-coluna {
+  max-width: 200px;
+  white-space: normal;
+  margin-top: 4px;
+}
+
 .cursor-pointer {
   cursor: pointer;
 }

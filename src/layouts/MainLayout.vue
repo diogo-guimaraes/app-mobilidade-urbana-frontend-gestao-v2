@@ -27,7 +27,7 @@
           </q-btn>
           <q-btn round flat>
             <q-avatar size="26px">
-              <img :src="user.thumbnail_host_path" />
+              <img :src="user?.foto" />
             </q-avatar>
             <q-tooltip>{{ user.name }}</q-tooltip>
           </q-btn>
