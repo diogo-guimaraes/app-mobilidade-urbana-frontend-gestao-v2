@@ -1,6 +1,7 @@
 <template>
   <q-page class="q-pa-md">
     <CriarUsuario @created="onRequest" v-model="dialog.cadastrar" />
+    <EditarUsuario @updated="onRequest" v-model="dialog.editar" :usuarioId="usuarioId" />
     <MostrarUsuario v-model="dialog.visualizar" />
     <q-card>
       <q-table
@@ -75,7 +76,7 @@
             <q-td key="acoes" align="center">
               <!-- <q-btn flat dense icon="visibility" @click="openEditar(props.row.id)" />
               <q-btn flat dense icon="delete" @click="arquivarUsuario(props.row.id)" /> -->
-              <q-btn @click="dialog.visualizar = true" dense flat icon="visibility">
+              <q-btn @click="openEditar(props.row.id)" dense flat icon="visibility">
                 <template v-slot:loading>
                   <q-spinner-hourglass />
                 </template>
@@ -135,6 +136,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { api } from 'boot/axios'
 import CriarUsuario from 'src/components/usuarios/CriarUsuario.vue'
 import MostrarUsuario from 'src/components/usuarios/MostrarUsuario.vue'
+import EditarUsuario from 'src/components/usuarios/EditarUsuario.vue'
 
 // STATES
 const usuarios = ref({
@@ -147,7 +149,7 @@ const search = ref('')
 const grid = ref(false)
 
 const dialog = reactive({
-  editarUsuario: false,
+  editar: false,
   cadastrar: false,
   visualizar: false,
 })
@@ -187,7 +189,7 @@ const clearSearch = () => {
 
 const openEditar = (id) => {
   usuarioId.value = id
-  dialog.editarUsuario = true
+  dialog.editar = true
 }
 
 const buscarDados = async (props) => {
