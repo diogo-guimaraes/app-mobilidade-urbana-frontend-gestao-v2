@@ -26,10 +26,12 @@
             <q-tooltip>Notifications</q-tooltip>
           </q-btn>
           <q-btn round flat>
-            <q-avatar size="26px">
-              <img :src="user?.foto" />
+            <q-avatar v-if="user?.foto_thumbnail" size="26px">
+              <img :src="user?.foto_thumbnail" />
             </q-avatar>
-            <q-tooltip>{{ user.name }}</q-tooltip>
+            <q-avatar v-else color="primary" text-color="white">
+              {{ user.name.substr(0, 1) }}
+            </q-avatar>
           </q-btn>
         </div>
       </q-toolbar>

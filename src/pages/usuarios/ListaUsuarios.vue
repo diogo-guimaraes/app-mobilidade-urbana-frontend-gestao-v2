@@ -3,6 +3,12 @@
     <CriarUsuario @created="onRequest" v-model="dialog.cadastrar" />
     <EditarUsuario @updated="onRequest" v-model="dialog.editar" :usuarioId="usuarioId" />
     <MostrarUsuario v-model="dialog.visualizar" />
+    <ExcluirUsuario
+      :acao="openPress"
+      :data="usuarioSelecionado"
+      @deleted="onRequest"
+      v-model="dialog.excluir"
+    />
     <q-card>
       <q-table
         :rows="usuarios.data"
@@ -27,6 +33,21 @@
             @keyup.enter="buscarDados"
           >
             <template #before>
+              <q-btn
+                :outline="!toggleButton.active"
+                icon="sym_o_delete"
+                color="primary"
+                @click="toggleButton.onClick"
+              />
+              <q-btn-toggle
+                @update:model-value="buscarDados()"
+                v-model="dominio"
+                toggle-color="primary"
+                :options="[
+                  { label: 'Ativos', value: 'users' },
+                  { label: 'Arquivados', value: 'usuarios-arquivados' },
+                ]"
+              />
               <q-btn icon="person_add_alt" color="primary" @click="dialog.cadastrar = true" />
             </template>
 
@@ -50,10 +71,13 @@
             <q-td key="nome">
               <q-item>
                 <q-item-section top avatar>
-                  <q-avatar>
+                  <q-avatar v-if="props.row.foto_thumbnail">
                     <img :src="props.row.foto" />
                   </q-avatar>
-                  <q-badge class="q-mt-sm" :label="props.row.type" color="grey" />
+                  <q-avatar v-else color="primary" text-color="white">
+                    {{ props.row.name.substr(0, 1) }}
+                  </q-avatar>
+                  <q-badge class="q-mt-sm" :label="props.row.type" color="grey-7" />
                 </q-item-section>
 
                 <q-item-section>
@@ -74,8 +98,6 @@
             </q-td>
 
             <q-td key="acoes" align="center">
-              <!-- <q-btn flat dense icon="visibility" @click="openEditar(props.row.id)" />
-              <q-btn flat dense icon="delete" @click="arquivarUsuario(props.row.id)" /> -->
               <q-btn @click="openEditar(props.row.id)" dense flat icon="visibility">
                 <template v-slot:loading>
                   <q-spinner-hourglass />
@@ -93,7 +115,7 @@
                 </q-tooltip>
               </q-btn>
 
-              <q-btn dense flat icon="delete">
+              <q-btn @click="openExcluir(props.row)" dense flat icon="delete">
                 <q-tooltip transition-show="flip-right" transition-hide="flip-left">
                   arquivar
                 </q-tooltip>
@@ -132,11 +154,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, nextTick } from 'vue'
 import { api } from 'boot/axios'
 import CriarUsuario from 'src/components/usuarios/CriarUsuario.vue'
 import MostrarUsuario from 'src/components/usuarios/MostrarUsuario.vue'
 import EditarUsuario from 'src/components/usuarios/EditarUsuario.vue'
+import ExcluirUsuario from 'src/components/usuarios/ExcluirUsuario.vue'
 
 // STATES
 const usuarios = ref({
@@ -144,6 +167,9 @@ const usuarios = ref({
   data: [],
 })
 
+const dominio = ref('users')
+const usuarioSelecionado = ref(null)
+const openPress = ref(null)
 const loading = ref(false)
 const search = ref('')
 const grid = ref(false)
@@ -152,17 +178,32 @@ const dialog = reactive({
   editar: false,
   cadastrar: false,
   visualizar: false,
+  excluir: false,
 })
+
+const toggleButton = {
+  active: ref(false),
+  onClick: () => {
+    toggleButton.active = !toggleButton.active
+    nextTick(() => {
+      if (toggleButton.active) {
+        dominio.value = 'usuarios-arquivados'
+      } else {
+        dominio.value = 'users'
+      }
+
+      buscarDados()
+    })
+  },
+}
 
 const usuarioId = ref(null)
 
 const pagination = ref({
   page: 1,
   rowsPerPage: 5,
-  // rowsNumber: 5,
 })
 
-// COLUMNS
 const columns = [
   { name: 'id', label: 'ID', field: 'id', align: 'left' },
   { name: 'nome', label: 'Nome', field: 'name', align: 'left' },
@@ -170,7 +211,6 @@ const columns = [
   { name: 'acoes', label: 'Ações', align: 'center' },
 ]
 
-// METHODS
 const badgeColor = (status) => {
   if (status === 'aprovado') return 'green'
   if (status === 'suspenso') return 'orange'
@@ -192,11 +232,18 @@ const openEditar = (id) => {
   dialog.editar = true
 }
 
+const openExcluir = (usuario) => {
+  usuarioSelecionado.value = [usuario]
+  openPress.value = 'arquivar'
+  dialog.excluir = true
+}
+
 const buscarDados = async (props) => {
+  console.log('buscarDados')
   loading.value = true
   const { page, rowsPerPage } = props ? props.pagination : pagination
   try {
-    const response = await api.get('/users', {
+    const response = await api.get(`${dominio.value}`, {
       params: {
         search: search.value || '',
         page: page,

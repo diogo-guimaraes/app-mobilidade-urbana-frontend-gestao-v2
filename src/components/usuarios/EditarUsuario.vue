@@ -116,7 +116,6 @@
           />
         </div>
       </div>
-
       <!-- <loading-dialog v-else /> -->
     </q-card>
   </q-dialog>
@@ -126,7 +125,6 @@
 import { ref, reactive, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { api } from 'boot/axios'
-// import LoadingDialog from 'components/LoadingDialog.vue'
 
 // PROPS
 const props = defineProps({
@@ -175,8 +173,6 @@ async function getUsuario(id) {
 async function beforeShowDialog() {
   if (!props.usuarioId) return
 
-  // loadingDialog.value = true
-
   try {
     const data = await getUsuario(props.usuarioId)
     Object.assign(user, data)
@@ -201,17 +197,20 @@ async function imageUpload(file) {
   form.append('image', file)
 
   try {
-    await api.put(`/users/${user.id}/image`, form)
+    await api.put(`/usuario-alterar-foto-perfil/${props.usuarioId}`, form, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
 
-    const data = await getUsuario(user.id)
+    const data = await getUsuario(props.usuarioId)
     Object.assign(user, data)
 
     emit('updated')
     $q.notify({ type: 'positive', message: 'Imagem atualizada com sucesso!' })
   } catch (err) {
-    console.log(err)
     image.data = null
-    $q.notify({ type: 'negative', message: 'Erro ao enviar imagem' })
+    $q.notify({ type: 'negative', message: err.message })
   } finally {
     image.submit = false
   }
@@ -222,18 +221,13 @@ async function removeProfileImage() {
   if (!props.usuarioId) return
 
   try {
-    const deletar = await api.delete(`/usuario-remover-foto-perfil/${props.usuarioId}`)
+    await api.delete(`/usuario-remover-foto-perfil/${props.usuarioId}`)
     const data = await getUsuario(props.usuarioId)
     Object.assign(user, data)
-
-    console.log(deletar, 'deletar')
-
-    // console.log(data, 'datadata')
     emit('updated')
     $q.notify({ type: 'positive', message: 'Imagem removida com sucesso!' })
   } catch (err) {
-    console.log(err)
-    $q.notify({ type: 'negative', message: 'Erro ao remover imagem' })
+    $q.notify({ type: 'negative', message: err.message })
   }
 }
 
@@ -254,9 +248,7 @@ async function atualizarUsuario() {
     emit('updated')
     $q.notify({ type: 'positive', message: 'Usuário atualizado com sucesso' })
   } catch (err) {
-    console.log(err)
-
-    $q.notify({ type: 'negative', message: 'Erro ao atualizar usuário' })
+    $q.notify({ type: 'negative', message: err.message })
   }
 }
 </script>
