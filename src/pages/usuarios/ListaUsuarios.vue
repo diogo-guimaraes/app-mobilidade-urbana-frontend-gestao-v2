@@ -3,6 +3,7 @@
     <CriarUsuario @created="onRequest" v-model="dialog.cadastrar" />
     <EditarUsuario @updated="onRequest" v-model="dialog.editar" :usuarioId="usuarioId" />
     <MostrarUsuario v-model="dialog.visualizar" />
+    <UsuarioDocumentos v-model="dialog.documentos" />
     <ExcluirUsuario
       :acao="openPress"
       :data="usuarioSelecionado"
@@ -33,12 +34,6 @@
             @keyup.enter="buscarDados"
           >
             <template #before>
-              <q-btn
-                :outline="!toggleButton.active"
-                icon="sym_o_delete"
-                color="primary"
-                @click="toggleButton.onClick"
-              />
               <q-btn-toggle
                 @update:model-value="buscarDados()"
                 v-model="dominio"
@@ -104,7 +99,7 @@
                 </template>
               </q-btn>
 
-              <q-btn flat dense icon="list_alt">
+              <q-btn @click="dialog.documentos = true" flat dense icon="list_alt">
                 <q-tooltip transition-show="flip-right" transition-hide="flip-left">
                   Documentos
                 </q-tooltip>
@@ -154,12 +149,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, nextTick } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { api } from 'boot/axios'
 import CriarUsuario from 'src/components/usuarios/CriarUsuario.vue'
 import MostrarUsuario from 'src/components/usuarios/MostrarUsuario.vue'
 import EditarUsuario from 'src/components/usuarios/EditarUsuario.vue'
 import ExcluirUsuario from 'src/components/usuarios/ExcluirUsuario.vue'
+import UsuarioDocumentos from 'src/components/usuarios/UsuarioDocumentos.vue'
 
 // STATES
 const usuarios = ref({
@@ -180,22 +176,6 @@ const dialog = reactive({
   visualizar: false,
   excluir: false,
 })
-
-const toggleButton = {
-  active: ref(false),
-  onClick: () => {
-    toggleButton.active = !toggleButton.active
-    nextTick(() => {
-      if (toggleButton.active) {
-        dominio.value = 'usuarios-arquivados'
-      } else {
-        dominio.value = 'users'
-      }
-
-      buscarDados()
-    })
-  },
-}
 
 const usuarioId = ref(null)
 
