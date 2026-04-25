@@ -4,10 +4,9 @@
       <q-toolbar>
         <q-btn flat dense round @click="toggleLeftDrawer" aria-label="Menu" icon="menu" />
 
-        <q-btn flat no-caps no-wrap class="q-ml-xs" v-if="$q.screen.gt.xs">
-          <q-icon :name="fabYoutube" color="red" size="28px" />
-          <q-toolbar-title shrink class="text-weight-bold"> YouTube </q-toolbar-title>
-        </q-btn>
+        <q-avatar class="cursor-pointer q-ml-xs">
+          <img src="https://cdn.quasar.dev/logo-v2/svg/logo.svg" />
+        </q-avatar>
 
         <q-space />
 
