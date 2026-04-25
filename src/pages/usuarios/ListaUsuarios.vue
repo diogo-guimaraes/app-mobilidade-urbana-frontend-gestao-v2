@@ -3,7 +3,7 @@
     <CriarUsuario @created="onRequest" v-model="dialog.cadastrar" />
     <EditarUsuario @updated="onRequest" v-model="dialog.editar" :usuarioId="usuarioId" />
     <MostrarUsuario v-model="dialog.visualizar" />
-    <UsuarioDocumentos v-model="dialog.documentos" />
+    <DocumentosUsuario v-model="dialog.documentos" />
     <ExcluirUsuario
       :acao="openPress"
       :data="usuarioSelecionado"
@@ -155,7 +155,7 @@ import CriarUsuario from 'src/components/usuarios/CriarUsuario.vue'
 import MostrarUsuario from 'src/components/usuarios/MostrarUsuario.vue'
 import EditarUsuario from 'src/components/usuarios/EditarUsuario.vue'
 import ExcluirUsuario from 'src/components/usuarios/ExcluirUsuario.vue'
-import UsuarioDocumentos from 'src/components/usuarios/UsuarioDocumentos.vue'
+import DocumentosUsuario from 'src/components/usuarios/DocumentosUsuario.vue'
 
 // STATES
 const usuarios = ref({
@@ -219,7 +219,7 @@ const openExcluir = (usuario) => {
 }
 
 const buscarDados = async (props) => {
-  console.log('buscarDados')
+  console.log(dominio.value, 'dominio value')
   loading.value = true
   const { page, rowsPerPage } = props ? props.pagination : pagination
   try {

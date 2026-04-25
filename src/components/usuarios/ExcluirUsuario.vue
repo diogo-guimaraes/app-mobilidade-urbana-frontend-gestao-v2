@@ -67,7 +67,7 @@ const props = defineProps({
 })
 
 // EMITS
-const emit = defineEmits(['update:modelValue', 'triggerAction'])
+const emit = defineEmits(['update:modelValue', 'deleted'])
 
 // QUASAR
 const $q = useQuasar()
