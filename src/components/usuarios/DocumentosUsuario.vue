@@ -1,7 +1,7 @@
 <template>
   <section>
-    <q-dialog v-model="model" @before-show="beforeShow">
-      <UploadArquivo @onRequest="onRequest()" v-model="dialog" />
+    <q-dialog v-model="model" @before-show="beforeShow" @before-hide="onBeforeHide">
+      <UploadArquivo :usuarioId="usuarioId" @onRequest="onRequest()" v-model="dialog" />
       <q-card style="width: 600px; max-width: 50vw">
         <!-- HEADER -->
         <q-toolbar>
@@ -30,7 +30,14 @@
               @request="onRequest"
             >
               <template v-slot:top>
-                <q-input filled dense v-model="search" placeholder="Pesquisar" class="full-width">
+                <q-btn
+                  icon-right="upload_file"
+                  label="Enviar documento"
+                  color="primary"
+                  class="full-width"
+                  @click="dialog = true"
+                />
+                <!-- <q-input filled dense v-model="search" placeholder="Pesquisar" class="full-width">
                   <template v-slot:before>
                     <q-btn @click="dialog = true" dense color="primary" icon="upload_file">
                       <q-tooltip
@@ -45,19 +52,30 @@
                   <template v-slot:append>
                     <q-icon v-if="search" name="close" class="cursor-pointer" />
                   </template>
-                </q-input>
+                </q-input> -->
               </template>
               <template v-slot:body="props">
-                <q-tr :props="props" @click="onRowClick(props.row)">
+                <q-tr :props="props">
                   <q-td key="name" :props="props">
                     <q-item>
                       <q-item-section top avatar>
-                        <q-avatar icon="list_alt" />
+                        <q-avatar rounded>
+                          <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
+                        </q-avatar>
                       </q-item-section>
 
                       <q-item-section>
-                        <q-item-label class="text-bold"> {{ props.row.name }}</q-item-label>
+                        <q-item-label class="text-h6"> {{ props.row.documento }}</q-item-label>
+                        <q-item-label class="estilo-coluna" caption>
+                          {{ props.row.name }}
+                        </q-item-label>
+                        <div>
+                          <q-badge color="grey" :label="props.row.status" />
+                        </div>
                       </q-item-section>
+                      <!-- <q-item-section side top>
+                        <q-badge color="grey" :label="props.row.status" />
+                      </q-item-section> -->
                     </q-item>
                   </q-td>
 
@@ -94,13 +112,14 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import UploadArquivo from 'src/components/usuarios/UploadArquivo.vue'
+import UploadArquivo from 'src/components/motorista/UploadArquivo.vue'
 // import { useQuasar } from 'quasar'
 import { api } from 'boot/axios'
 
 // PROPS
 const props = defineProps({
   modelValue: Boolean,
+  usuarioId: [String, Number],
 })
 
 // EMITS
@@ -130,11 +149,10 @@ const columns = [
   {
     name: 'name',
     required: true,
-    label: 'Documento',
+    label: 'Documentos',
     align: 'left',
     field: (row) => row.name,
     format: (val) => `${val}`,
-    sortable: true,
   },
   {
     name: 'acoes',
@@ -146,7 +164,12 @@ const columns = [
 
 // LIFECYCLE
 function beforeShow() {
+  data.value = []
   request()
+}
+
+function onBeforeHide() {
+  data.value = []
 }
 
 // ACTION
@@ -156,11 +179,13 @@ const onRequest = async (props) => {
   await request(props)
 }
 
-const request = async (props) => {
+const request = async (payload) => {
+  console.log(props)
+  if (!props?.usuarioId) return
   loading.value = true
-  const { page, rowsPerPage } = props ? props.pagination : pagination
+  const { page, rowsPerPage } = payload ? props.pagination : pagination
   try {
-    const response = await api.get('/motorista-documentos', {
+    const response = await api.get(`/motorista-documentos/${props.usuarioId}`, {
       params: {
         search: search.value || '',
         page: page,
@@ -170,7 +195,6 @@ const request = async (props) => {
 
     data.value = response.data.data
     const paginate = response.data
-    console.log(data, 'data')
     pagination.value.rowsNumber = paginate.total
     pagination.value.page = paginate.current_page
     pagination.value.rowsPerPage = paginate.per_page === paginate.total ? 0 : paginate.per_page
@@ -181,3 +205,10 @@ const request = async (props) => {
   }
 }
 </script>
+<style scoped>
+.estilo-coluna {
+  max-width: 200px;
+  white-space: normal;
+  margin-top: 4px;
+}
+</style>

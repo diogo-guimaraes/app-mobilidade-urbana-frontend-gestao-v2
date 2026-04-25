@@ -3,7 +3,7 @@
     <CriarUsuario @created="onRequest" v-model="dialog.cadastrar" />
     <EditarUsuario @updated="onRequest" v-model="dialog.editar" :usuarioId="usuarioId" />
     <MostrarUsuario v-model="dialog.visualizar" />
-    <DocumentosUsuario v-model="dialog.documentos" />
+    <DocumentosUsuario :usuarioId="usuarioId" v-model="dialog.documentos" />
     <ExcluirUsuario
       :acao="openPress"
       :data="usuarioSelecionado"
@@ -11,6 +11,7 @@
       v-model="dialog.excluir"
     />
     <q-card>
+      {{ usuarioId }}
       <q-table
         :rows="usuarios.data"
         :columns="columns"
@@ -99,7 +100,12 @@
                 </template>
               </q-btn>
 
-              <q-btn @click="dialog.documentos = true" flat dense icon="list_alt">
+              <q-btn
+                @click=";(dialog.documentos = true), (usuarioId = props.row.id)"
+                flat
+                dense
+                icon="list_alt"
+              >
                 <q-tooltip transition-show="flip-right" transition-hide="flip-left">
                   Documentos
                 </q-tooltip>
