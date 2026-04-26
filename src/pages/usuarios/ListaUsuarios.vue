@@ -11,7 +11,6 @@
       v-model="dialog.excluir"
     />
     <q-card>
-      {{ usuarioId }}
       <q-table
         :rows="usuarios.data"
         :columns="columns"
@@ -36,7 +35,12 @@
           >
             <template #before>
               <q-btn-toggle
-                @update:model-value="buscarDados()"
+                @update:model-value="
+                  (val) => {
+                    dominio = val
+                    buscarDados()
+                  }
+                "
                 v-model="dominio"
                 toggle-color="primary"
                 :options="[
@@ -51,11 +55,11 @@
               <q-icon name="close" class="cursor-pointer" @click="clearSearch" />
             </template>
 
-            <template #after>
+            <!-- <template #after>
               <q-btn round dense flat icon="search" @click="buscarDados" />
 
               <q-btn flat round dense :icon="grid ? 'list' : 'grid_on'" @click="toggleGrid" />
-            </template>
+            </template> -->
           </q-input>
         </template>
 
@@ -203,9 +207,9 @@ const badgeColor = (status) => {
   if (status === 'banido') return 'red'
 }
 
-const toggleGrid = () => {
-  grid.value = !grid.value
-}
+// const toggleGrid = () => {
+//   grid.value = !grid.value
+// }
 
 const clearSearch = () => {
   search.value = ''

@@ -28,6 +28,8 @@
               row-key="id"
               :pagination="pagination"
               @request="onRequest"
+              hide-header
+              hide-bottom
             >
               <template v-slot:top>
                 <q-btn

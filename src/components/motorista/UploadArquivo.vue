@@ -16,15 +16,15 @@
 
         <div class="q-pa-md">
           <q-stepper v-model="step" ref="stepper" color="primary" animated>
-            <q-step :name="1" title="Seleção tipo de documento" icon="settings" :done="step > 1">
+            <q-step :name="1" title="Seleção do tipo de documento" icon="settings" :done="step > 1">
               <q-card>
                 <q-table
-                  :loading="loading"
                   flat
                   :rows="data"
                   :columns="columns"
                   row-key="documento"
                   hide-bottom
+                  hide-header
                   selection="single"
                   v-model:selected="selected"
                 >
@@ -55,13 +55,7 @@
               </q-card>
             </q-step>
 
-            <q-step
-              :name="2"
-              title="Selecionar documento"
-              caption="Optional"
-              icon="upload_file"
-              :done="step > 2"
-            >
+            <q-step :name="2" title="Selecionar documento" icon="upload_file" :done="step > 2">
               <q-card-section>
                 <q-item class="q-pa-none">
                   <q-item-section top avatar>
