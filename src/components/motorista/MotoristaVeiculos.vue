@@ -1,9 +1,13 @@
 <template>
   <section>
+    <AdicionarVeiculo
+      :usuario="usuario"
+      @onRequest="onRequest()"
+      v-model="dialog"
+      @hide="reabrirPrincipal"
+    />
     <q-dialog v-model="model" @before-show="beforeShow" @before-hide="onBeforeHide">
-      <AdicionarVeiculo :usuarioId="usuarioId" @onRequest="onRequest()" v-model="dialog" />
       <q-card style="width: 600px; max-width: 50vw">
-        <!-- HEADER -->
         <q-toolbar>
           <q-avatar rounded size="md" icon="directions_car" color="primary" text-color="white" />
           <q-toolbar-title>
@@ -14,9 +18,7 @@
         </q-toolbar>
 
         <q-separator />
-        <!-- <pre>
-          {{ data }}
-        </pre> -->
+
         <q-card-section>
           <div class="q-pa-xs">
             <q-table
@@ -27,10 +29,8 @@
               :loading="loading"
               @request="onRequest"
             >
-              <!-- TOPO -->
               <template #top>
                 <q-space />
-
                 <q-input
                   class="full-width"
                   filled
@@ -41,42 +41,20 @@
                   @keyup.enter="onRequest()"
                 >
                   <template #before>
-                    <!-- <q-btn-toggle
-                @update:model-value="
-                  (val) => {
-                    dominio = val
-                    onRequest()()
-                  }
-                "
-                v-model="dominio"
-                toggle-color="primary"
-                :options="[
-                  { label: 'Ativos', value: 'users' },
-                  { label: 'Arquivados', value: 'usuarios-arquivados' },
-                ]"
-              />
-               -->
                     <q-btn
                       icon="add_box"
                       label="ADICIONAR VEÍCULO"
                       color="primary"
-                      @click="dialog = true"
+                      @click="abrirAdicionarVeiculo()"
                     />
                   </template>
 
                   <template v-if="search" #append>
                     <q-icon name="close" class="cursor-pointer" @click="clearSearch" />
                   </template>
-
-                  <!-- <template #after>
-              <q-btn round dense flat icon="search" @click="onRequest()" />
-
-              <q-btn flat round dense :icon="grid ? 'list' : 'grid_on'" @click="toggleGrid" />
-            </template> -->
                 </q-input>
               </template>
 
-              <!-- LISTA -->
               <template #body="props">
                 <q-tr :props="props">
                   <q-td key="id">{{ props.row.id }}</q-td>
@@ -109,33 +87,16 @@
                   </q-td>
 
                   <q-td key="acoes" align="center">
-                    <q-btn @click="openEditar(props.row.id)" dense flat icon="visibility">
+                    <q-btn dense flat icon="visibility">
                       <template v-slot:loading>
                         <q-spinner-hourglass />
                       </template>
                     </q-btn>
-
-                    <!-- <q-btn
-                      @click=";(dialog.documentos = true), (veiculoId = props.row.id)"
-                      flat
-                      dense
-                      icon="groups_2"
-                    >
-                      <q-tooltip transition-show="flip-right" transition-hide="flip-left">
-                        Documentos
-                      </q-tooltip>
-                    </q-btn> -->
-                    <q-btn dense flat icon="directions_car">
-                      <q-tooltip transition-show="flip-right" transition-hide="flip-left">
-                        Veículos
-                      </q-tooltip>
+                    <q-btn dense flat icon="delete">
+                      <template v-slot:loading>
+                        <q-spinner-hourglass />
+                      </template>
                     </q-btn>
-
-                    <!-- <q-btn @click="openExcluir(props.row)" dense flat icon="delete">
-                      <q-tooltip transition-show="flip-right" transition-hide="flip-left">
-                        arquivar
-                      </q-tooltip>
-                    </q-btn> -->
                   </q-td>
                 </q-tr>
               </template>
@@ -156,13 +117,12 @@ import { api } from 'boot/axios'
 // PROPS
 const props = defineProps({
   modelValue: Boolean,
-  usuarioId: [String, Number],
+  usuario: [Object],
 })
 
 // EMITS
 const emit = defineEmits(['update:modelValue'])
 
-// QUASAR
 // const $q = useQuasar()
 
 // MODEL
@@ -184,7 +144,15 @@ const pagination = ref({
 
 const columns = [
   {
-    name: 'name',
+    name: 'id',
+    required: true,
+    label: '',
+    align: 'left',
+    field: (row) => row.name,
+    format: (val) => `${val}`,
+  },
+  {
+    name: 'veiculo',
     required: true,
     label: 'Documentos',
     align: 'left',
@@ -192,12 +160,16 @@ const columns = [
     format: (val) => `${val}`,
   },
   {
+    name: 'status',
+    label: 'Status',
+    align: 'left',
+  },
+  {
     name: 'acoes',
     label: 'Ações',
+    align: 'center',
   },
 ]
-
-// COMPUTED
 
 // LIFECYCLE
 function beforeShow() {
@@ -206,10 +178,20 @@ function beforeShow() {
 }
 
 function onBeforeHide() {
+  console.log('passou em onBeforeHide')
   data.value = []
 }
 
-// ACTION
+function reabrirPrincipal() {
+  console.log('passou em reabrirPrincipal')
+  model.value = true
+}
+
+function abrirAdicionarVeiculo() {
+  console.log('abrirAdicionarVeiculo')
+  model.value = false
+  dialog.value = true
+}
 
 const badgeColor = (status) => {
   if (status === 'ativo') return 'green'
@@ -219,17 +201,15 @@ const badgeColor = (status) => {
 }
 
 const onRequest = async (props) => {
-  console.log(props, 'props')
   await request(props)
 }
 
 const request = async (payload) => {
-  console.log(props)
-  if (!props?.usuarioId) return
+  if (!props?.usuario?.id) return
   loading.value = true
   const { page, rowsPerPage } = payload ? props.pagination : pagination
   try {
-    const response = await api.get(`/motorista-veiculos/${props.usuarioId}`, {
+    const response = await api.get(`/motorista-veiculos/${props.usuario?.id}`, {
       params: {
         search: search.value || '',
         page: page,

@@ -84,7 +84,9 @@
                   <q-avatar v-else color="primary" text-color="white">
                     {{ props.row.name.substr(0, 1) }}
                   </q-avatar>
-                  <q-badge class="q-mt-sm" :label="props.row.type" color="grey-7" />
+                  <q-badge class="q-mt-sm" :color="badgeColor(props.row.status)">
+                    {{ props.row.status }}
+                  </q-badge>
                 </q-item-section>
 
                 <q-item-section>
@@ -96,12 +98,6 @@
                   </q-item-label>
                 </q-item-section>
               </q-item>
-            </q-td>
-
-            <q-td key="status">
-              <q-badge :color="badgeColor(props.row.status)">
-                {{ props.row.status }}
-              </q-badge>
             </q-td>
 
             <q-td key="acoes" align="center">
@@ -204,7 +200,6 @@ const pagination = ref({
 const columns = [
   { name: 'id', label: 'ID', field: 'id', align: 'left' },
   { name: 'nome', label: 'Nome', field: 'name', align: 'left' },
-  { name: 'status', label: 'Status', field: 'status', align: 'left' },
   { name: 'acoes', label: 'Ações', align: 'center' },
 ]
 

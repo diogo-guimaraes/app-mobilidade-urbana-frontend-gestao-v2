@@ -2,37 +2,84 @@
   <section>
     <q-dialog v-model="model" @before-show="beforeShow" @before-hide="onBeforeHide">
       <q-card style="width: 600px; max-width: 50vw">
-        <!-- HEADER -->
         <q-toolbar>
-          <q-avatar rounded size="md" icon="directions_car" color="primary" text-color="white" />
+          <q-avatar rounded size="md" icon="window" color="primary" text-color="white" />
+          <!-- <q-item>
+            <q-item-section top avatar>
+              <q-avatar v-if="usuario?.foto_thumbnail">
+                <img :src="usuario?.foto" />
+              </q-avatar>
+              <q-avatar v-else color="primary" text-color="white">
+                {{ usuario?.name.substr(0, 1) }}
+              </q-avatar>
+              <q-badge class="q-mt-sm" :color="badgeColor(usuario?.status)">
+                {{ usuario?.status }}
+              </q-badge>
+            </q-item-section>
+            <q-item-section>
+              <q-item-label class="text-bold"> {{ usuario?.name }}</q-item-label>
+              <q-item-label class="estilo-coluna">
+                {{ usuario?.email }}
+                <div>CPF: {{ usuario?.cpf }}</div>
+                <div>TEL: {{ usuario?.telefone }}</div>
+              </q-item-label>
+            </q-item-section>
+          </q-item> -->
+
           <q-toolbar-title>
             <span class="text-weight-bold"> Adicionar veículo ao motorista </span>
           </q-toolbar-title>
-
           <q-btn flat round dense icon="close" v-close-popup />
         </q-toolbar>
-
         <q-separator />
-        <!-- <pre>
-          {{ data }}
+
+        <!--
+        <pre>
+          {{ usuario }}
         </pre> -->
+        <q-card-section class="row items-center q-pb-none">
+          <q-item>
+            <q-item-section top avatar>
+              <q-avatar v-if="usuario?.foto_thumbnail">
+                <img :src="usuario?.foto" />
+              </q-avatar>
+              <q-avatar v-else color="primary" text-color="white">
+                {{ usuario?.name.substr(0, 1) }}
+              </q-avatar>
+              <q-badge class="q-mt-sm" :color="badgeColor(usuario?.status)">
+                {{ usuario?.status }}
+              </q-badge>
+            </q-item-section>
+            <q-item-section>
+              <q-item-label class="text-bold"> {{ usuario?.name }}</q-item-label>
+              <q-item-label class="estilo-coluna">
+                {{ usuario?.email }}
+                <div>CPF: {{ usuario?.cpf }}</div>
+                <div>TEL: {{ usuario?.telefone }}</div>
+              </q-item-label>
+            </q-item-section>
+          </q-item>
+          <!-- <span v-if="data" class="text-h6"> Adicionar veículo ao motorista </span> -->
+        </q-card-section>
+
         <q-card-section>
           <q-select
             class="full-width"
             filled
             borderless
-            v-model="veiculoId"
+            v-model="veiculo"
             :options="optionsVeiculos"
             label="Digite a placa do veículo"
             option-label="placa"
             use-input
             emit-value
             map-options
+            clearable
             @filter="filter"
+            @update:model-value="confirmarIncluscao($event)"
           >
-            <!-- @input="inputPMOrcamentos" -->
             <template v-slot:option="scope">
-              <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
+              <q-item v-bind="scope.itemProps || {}" v-on="scope.itemEvents || {}">
                 <q-item-section avatar>
                   <q-icon name="directions_car" />
                 </q-item-section>
@@ -49,13 +96,6 @@
                     <span style="font-weight: bold">Marca:</span>
                     {{ scope.opt.marca }}
                   </q-item-label>
-                  <!-- <q-item-label>
-                    {{ scope.opt.ano_modelo }}
-                  </q-item-label> -->
-                  <!-- <q-item-label caption>
-                    Data
-                    {{ format_date(scope.opt.update_et) }}
-                  </q-item-label> -->
                   <q-item-label>
                     <q-badge :color="badgeColor(scope.opt.status)">
                       {{ scope.opt.status }}
@@ -67,27 +107,52 @@
           </q-select>
         </q-card-section>
       </q-card>
+      <q-dialog v-model="dialog" @before-hide="onBeforeHideSecondary">
+        <q-card style="width: 500px; max-width: 50vw">
+          <q-card-section class="row items-center q-pb-none">
+            <span class="text-h6">Confirme a inclusão do veículo ao motorista</span>
+          </q-card-section>
+          <q-card-section>
+            <div class="row wrap justify-between items-start content-start">
+              <CardPerfilVeiculo :veiculo="veiculo" />
+              <CardPerfilUsuario :usuario="usuario" />
+            </div>
+          </q-card-section>
+
+          <q-card-actions align="right">
+            <q-btn flat label="CANCELAR" color="primary" :loading="loading" v-close-popup />
+            <q-btn
+              flat
+              label="confirmar"
+              color="green"
+              :loading="loading"
+              icon-right="done"
+              @click="adicionarVeiculoAoMotorista()"
+            />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
     </q-dialog>
   </section>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
-
-// import { useQuasar } from 'quasar'
+import { computed, watch, ref } from 'vue'
+import { useQuasar } from 'quasar'
 import { api } from 'boot/axios'
+import CardPerfilUsuario from 'src/components/usuarios/CardPerfilUsuario.vue'
+import CardPerfilVeiculo from 'src/components/veiculos/CardPerfilVeiculo.vue'
 
 // PROPS
 const props = defineProps({
   modelValue: Boolean,
-  usuarioId: [String, Number],
+  usuario: [Object],
 })
 
 // EMITS
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'hide'])
 
-// QUASAR
-// const $q = useQuasar()
+const $q = useQuasar()
 
 // MODEL
 const model = computed({
@@ -95,20 +160,20 @@ const model = computed({
   set: (val) => emit('update:modelValue', val),
 })
 
-// STATE
 const optionsVeiculos = ref(null)
-
-// const loading = ref(false)
-// const search = ref('')
-
-// const dialog = ref(false)
+const dialog = ref(false)
+const loading = ref(false)
 const data = ref([])
-const veiculoId = ref('')
+const veiculo = ref('')
 
-// COMPUTED
+watch(model, (val) => {
+  if (!val) {
+    emit('hide')
+  }
+})
 
-// LIFECYCLE
 function beforeShow() {
+  veiculo.value = ''
   data.value = []
   getVeiculos()
 }
@@ -117,11 +182,16 @@ function onBeforeHide() {
   data.value = []
 }
 
-// ACTION
+function onBeforeHideSecondary() {
+  veiculo.value = ''
+}
+
+function confirmarIncluscao() {
+  if (!veiculo.value) return
+  dialog.value = true
+}
 
 const filter = async (val, update) => {
-  console.log(val, 'val')
-  // await this.$nextTick()
   const needle = val.toLowerCase()
   if (needle === '') {
     optionsVeiculos.value = []
@@ -139,19 +209,34 @@ const badgeColor = (status) => {
   if (status === 'bloqueado') return 'red'
 }
 
-// const onRequest = async (props) => {
-//   console.log(props, 'props')
-//   await request(props)
-// }
-
 const getVeiculos = async (placa) => {
-  console.log(placa, 'placa')
   try {
     const response = await api.get(`veiculo-por-placa/${placa}`)
-    console.log(response, 'response')
     data.value = response.data
   } catch (error) {
     console.error(error)
+  }
+}
+
+const adicionarVeiculoAoMotorista = async () => {
+  try {
+    loading.value = true
+    const response = await api.post('adicionar-veiculo-ao-motorista', {
+      motorista_id: props.usuario?.id,
+      veiculo_id: veiculo.value?.id,
+    })
+    console.log(response, 'err')
+    emit('onRequest')
+
+    $q.notify({ type: 'positive', message: 'Veículo adicionado com sucesso' })
+  } catch (err) {
+    console.log(err, 'err')
+    loading.value = false
+    $q.notify({ type: 'negative', message: err.message })
+  } finally {
+    loading.value = false
+    dialog.value = false
+    model.value = false
   }
 }
 </script>

@@ -4,7 +4,7 @@
     <EditarUsuario @updated="onRequest" v-model="dialog.editar" :usuarioId="usuarioId" />
     <MostrarUsuario v-model="dialog.visualizar" />
     <DocumentosUsuario :usuarioId="usuarioId" v-model="dialog.documentos" />
-    <DocumentoVeiculos :usuarioId="usuarioId" v-model="dialog.veiculos" />
+    <MotoristaVeiculos :usuario="usuario" v-model="dialog.veiculos" />
     <ExcluirUsuario
       :acao="openPress"
       :data="usuarioSelecionado"
@@ -29,10 +29,8 @@
         :loading="loading"
         @request="onRequest"
       >
-        <!-- TOPO -->
         <template #top>
           <q-space />
-
           <q-input
             class="full-width"
             filled
@@ -62,16 +60,9 @@
             <template v-if="search" #append>
               <q-icon name="close" class="cursor-pointer" @click="clearSearch" />
             </template>
-
-            <!-- <template #after>
-              <q-btn round dense flat icon="search" @click="buscarDados" />
-
-              <q-btn flat round dense :icon="grid ? 'list' : 'grid_on'" @click="toggleGrid" />
-            </template> -->
           </q-input>
         </template>
 
-        <!-- LISTA -->
         <template #body="props">
           <q-tr :props="props">
             <q-td key="id">{{ props.row.id }}</q-td>
@@ -119,7 +110,12 @@
                 </q-tooltip>
               </q-btn>
               <q-btn
-                @click=";(dialog.veiculos = true), (usuarioId = props.row.user.id)"
+                @click="
+                  () => {
+                    dialog.veiculos = true
+                    usuario = props.row.user
+                  }
+                "
                 dense
                 flat
                 icon="directions_car"
@@ -137,31 +133,6 @@
             </q-td>
           </q-tr>
         </template>
-
-        <!-- GRID -->
-        <!-- <template #item="props">
-          <div class="q-pa-xs col-xs-12 col-sm-6 col-md-3">
-            <q-card>
-              <q-item clickable @click="openEditar(props.row.id)">
-                <q-item-section avatar>
-                  <q-avatar size="70px">
-                    <img v-if="props.row.foto" :src="props.row.foto" />
-                    <span v-else>
-                      {{ props.row.name?.charAt(0) }}
-                    </span>
-                  </q-avatar>
-                </q-item-section>
-
-                <q-item-section>
-                  <q-item-label>{{ props.row.name }}</q-item-label>
-                  <q-item-label caption>
-                    {{ props.row.email }}
-                  </q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-card>
-          </div>
-        </template> -->
       </q-table>
     </q-card>
   </q-page>
@@ -175,7 +146,7 @@ import MostrarUsuario from 'src/components/usuarios/MostrarUsuario.vue'
 import EditarUsuario from 'src/components/usuarios/EditarUsuario.vue'
 import ExcluirUsuario from 'src/components/usuarios/ExcluirUsuario.vue'
 import DocumentosUsuario from 'src/components/usuarios/DocumentosUsuario.vue'
-import DocumentoVeiculos from 'src/components/motorista/DocumentoVeiculos.vue'
+import MotoristaVeiculos from 'src/components/motorista/MotoristaVeiculos.vue'
 
 // STATES
 const usuarios = ref({
@@ -199,6 +170,7 @@ const dialog = reactive({
 })
 
 const usuarioId = ref(null)
+const usuario = ref({})
 
 const pagination = ref({
   page: 1,
