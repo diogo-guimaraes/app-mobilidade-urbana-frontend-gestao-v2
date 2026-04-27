@@ -4,62 +4,14 @@
       <q-card style="width: 600px; max-width: 50vw">
         <q-toolbar>
           <q-avatar rounded size="md" icon="window" color="primary" text-color="white" />
-          <!-- <q-item>
-            <q-item-section top avatar>
-              <q-avatar v-if="usuario?.foto_thumbnail">
-                <img :src="usuario?.foto" />
-              </q-avatar>
-              <q-avatar v-else color="primary" text-color="white">
-                {{ usuario?.name.substr(0, 1) }}
-              </q-avatar>
-              <q-badge class="q-mt-sm" :color="badgeColor(usuario?.status)">
-                {{ usuario?.status }}
-              </q-badge>
-            </q-item-section>
-            <q-item-section>
-              <q-item-label class="text-bold"> {{ usuario?.name }}</q-item-label>
-              <q-item-label class="estilo-coluna">
-                {{ usuario?.email }}
-                <div>CPF: {{ usuario?.cpf }}</div>
-                <div>TEL: {{ usuario?.telefone }}</div>
-              </q-item-label>
-            </q-item-section>
-          </q-item> -->
-
           <q-toolbar-title>
             <span class="text-weight-bold"> Adicionar veículo ao motorista </span>
           </q-toolbar-title>
           <q-btn flat round dense icon="close" v-close-popup />
         </q-toolbar>
         <q-separator />
-
-        <!--
-        <pre>
-          {{ usuario }}
-        </pre> -->
         <q-card-section class="row items-center q-pb-none">
-          <q-item>
-            <q-item-section top avatar>
-              <q-avatar v-if="usuario?.foto_thumbnail">
-                <img :src="usuario?.foto" />
-              </q-avatar>
-              <q-avatar v-else color="primary" text-color="white">
-                {{ usuario?.name.substr(0, 1) }}
-              </q-avatar>
-              <q-badge class="q-mt-sm" :color="badgeColor(usuario?.status)">
-                {{ usuario?.status }}
-              </q-badge>
-            </q-item-section>
-            <q-item-section>
-              <q-item-label class="text-bold"> {{ usuario?.name }}</q-item-label>
-              <q-item-label class="estilo-coluna">
-                {{ usuario?.email }}
-                <div>CPF: {{ usuario?.cpf }}</div>
-                <div>TEL: {{ usuario?.telefone }}</div>
-              </q-item-label>
-            </q-item-section>
-          </q-item>
-          <!-- <span v-if="data" class="text-h6"> Adicionar veículo ao motorista </span> -->
+          <CardPerfilUsuario :usuario="usuario" />
         </q-card-section>
 
         <q-card-section>
@@ -118,7 +70,6 @@
               <CardPerfilUsuario :usuario="usuario" />
             </div>
           </q-card-section>
-
           <q-card-actions align="right">
             <q-btn flat label="CANCELAR" color="primary" :loading="loading" v-close-popup />
             <q-btn
