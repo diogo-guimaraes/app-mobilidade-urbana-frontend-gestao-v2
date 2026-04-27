@@ -4,6 +4,7 @@
     <EditarUsuario @updated="onRequest" v-model="dialog.editar" :usuarioId="usuarioId" />
     <MostrarUsuario v-model="dialog.visualizar" />
     <DocumentosUsuario :usuarioId="usuarioId" v-model="dialog.documentos" />
+    <DocumentoVeiculos :usuarioId="usuarioId" v-model="dialog.veiculos" />
     <ExcluirUsuario
       :acao="openPress"
       :data="usuarioSelecionado"
@@ -11,6 +12,14 @@
       v-model="dialog.excluir"
     />
     <q-card>
+      <div class="row wrap justify-between items-start content-start">
+        <div>
+          <!-- <q-btn icon="person_add_alt" color="primary" @click="dialog.cadastrar = true" /> -->
+        </div>
+        <div class="q-pa-md">
+          <q-btn icon="person_add_alt" color="primary" @click="dialog.cadastrar = true" />
+        </div>
+      </div>
       <q-table
         :rows="usuarios.data"
         :columns="columns"
@@ -44,14 +53,13 @@
                 v-model="dominio"
                 toggle-color="primary"
                 :options="[
-                  { label: 'Ativos', value: 'users' },
-                  { label: 'Arquivados', value: 'usuarios-arquivados' },
+                  { label: 'Ativos', value: 'motoristas' },
+                  { label: 'Arquivados', value: 'motoristas-arquivados' },
                 ]"
               />
-              <q-btn icon="person_add_alt" color="primary" @click="dialog.cadastrar = true" />
             </template>
 
-            <template #append>
+            <template v-if="search" #append>
               <q-icon name="close" class="cursor-pointer" @click="clearSearch" />
             </template>
 
@@ -68,44 +76,40 @@
           <q-tr :props="props">
             <q-td key="id">{{ props.row.id }}</q-td>
 
-            <q-td key="nome">
+            <q-td key="motorista">
               <q-item>
                 <q-item-section top avatar>
-                  <q-avatar v-if="props.row.foto_thumbnail">
-                    <img :src="props.row.foto" />
+                  <q-avatar v-if="props.row.user.foto_thumbnail">
+                    <img :src="props.row.user.foto" />
                   </q-avatar>
                   <q-avatar v-else color="primary" text-color="white">
-                    {{ props.row.name.substr(0, 1) }}
+                    {{ props.row.user.name.substr(0, 1) }}
                   </q-avatar>
-                  <q-badge class="q-mt-sm" :label="props.row.type" color="grey-7" />
+                  <q-badge class="q-mt-sm" :color="badgeColor(props.row.user.status)">
+                    {{ props.row.user.status }}
+                  </q-badge>
                 </q-item-section>
 
                 <q-item-section>
-                  <q-item-label class="text-bold"> {{ props.row.name }}</q-item-label>
+                  <q-item-label class="text-bold"> {{ props.row.user.name }}</q-item-label>
                   <q-item-label class="estilo-coluna">
-                    {{ props.row.email }}
-                    <div>CPF: {{ props.row.cpf }}</div>
-                    <div>TEL: {{ props.row.telefone }}</div>
+                    {{ props.row.user.email }}
+                    <div>CPF: {{ props.row.user.cpf }}</div>
+                    <div>TEL: {{ props.row.user.telefone }}</div>
                   </q-item-label>
                 </q-item-section>
               </q-item>
             </q-td>
 
-            <q-td key="status">
-              <q-badge :color="badgeColor(props.row.status)">
-                {{ props.row.status }}
-              </q-badge>
-            </q-td>
-
             <q-td key="acoes" align="center">
-              <q-btn @click="openEditar(props.row.id)" dense flat icon="visibility">
+              <q-btn @click="openEditar(props.row.user.id)" dense flat icon="visibility">
                 <template v-slot:loading>
                   <q-spinner-hourglass />
                 </template>
               </q-btn>
 
               <q-btn
-                @click=";(dialog.documentos = true), (usuarioId = props.row.id)"
+                @click=";(dialog.documentos = true), (usuarioId = props.row.user.id)"
                 flat
                 dense
                 icon="list_alt"
@@ -114,7 +118,12 @@
                   Documentos
                 </q-tooltip>
               </q-btn>
-              <q-btn dense flat icon="directions_car">
+              <q-btn
+                @click=";(dialog.veiculos = true), (usuarioId = props.row.user.id)"
+                dense
+                flat
+                icon="directions_car"
+              >
                 <q-tooltip transition-show="flip-right" transition-hide="flip-left">
                   Veículos
                 </q-tooltip>
@@ -130,7 +139,7 @@
         </template>
 
         <!-- GRID -->
-        <template #item="props">
+        <!-- <template #item="props">
           <div class="q-pa-xs col-xs-12 col-sm-6 col-md-3">
             <q-card>
               <q-item clickable @click="openEditar(props.row.id)">
@@ -152,7 +161,7 @@
               </q-item>
             </q-card>
           </div>
-        </template>
+        </template> -->
       </q-table>
     </q-card>
   </q-page>
@@ -166,6 +175,7 @@ import MostrarUsuario from 'src/components/usuarios/MostrarUsuario.vue'
 import EditarUsuario from 'src/components/usuarios/EditarUsuario.vue'
 import ExcluirUsuario from 'src/components/usuarios/ExcluirUsuario.vue'
 import DocumentosUsuario from 'src/components/usuarios/DocumentosUsuario.vue'
+import DocumentoVeiculos from 'src/components/motorista/DocumentoVeiculos.vue'
 
 // STATES
 const usuarios = ref({
@@ -173,7 +183,7 @@ const usuarios = ref({
   data: [],
 })
 
-const dominio = ref('users')
+const dominio = ref('motoristas')
 const usuarioSelecionado = ref(null)
 const openPress = ref(null)
 const loading = ref(false)
@@ -185,6 +195,7 @@ const dialog = reactive({
   cadastrar: false,
   visualizar: false,
   excluir: false,
+  veiculos: false,
 })
 
 const usuarioId = ref(null)
@@ -196,8 +207,7 @@ const pagination = ref({
 
 const columns = [
   { name: 'id', label: 'ID', field: 'id', align: 'left' },
-  { name: 'nome', label: 'Nome', field: 'name', align: 'left' },
-  { name: 'status', label: 'Status', field: 'status', align: 'left' },
+  { name: 'motorista', label: 'Motorista', field: 'name', align: 'left' },
   { name: 'acoes', label: 'Ações', align: 'center' },
 ]
 

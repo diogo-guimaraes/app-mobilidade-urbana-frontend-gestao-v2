@@ -157,6 +157,8 @@ export default {
 
       links1: [
         { icon: 'groups_2', text: 'Usuarios', to: '/usuarios' },
+        { icon: 'directions_car', text: 'Veículos', to: '/veiculos' },
+        { icon: 'group', text: 'Motoristas', to: '/motoristas' },
         { icon: 'help_center', text: 'Central de ajuda', to: '/usuarios1' },
         { icon: 'settings', text: 'Configurações', to: '/usuarios2' },
       ],
