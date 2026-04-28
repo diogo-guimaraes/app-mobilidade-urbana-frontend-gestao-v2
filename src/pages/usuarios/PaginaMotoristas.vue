@@ -1,6 +1,6 @@
 <template>
   <q-page class="q-pa-md">
-    <CriarUsuario @created="onRequest" v-model="dialog.cadastrar" />
+    <CriarMotorista @created="onRequest" v-model="dialog.cadastrar" />
     <EditarUsuario @updated="onRequest" v-model="dialog.editar" :usuarioId="usuarioId" />
     <MostrarUsuario v-model="dialog.visualizar" />
     <DocumentosUsuario :usuarioId="usuarioId" v-model="dialog.documentos" />
@@ -12,14 +12,14 @@
       v-model="dialog.excluir"
     />
     <q-card>
-      <div class="row wrap justify-between items-start content-start">
+      <!-- <div class="row wrap justify-between items-start content-start">
         <div>
-          <!-- <q-btn icon="person_add_alt" color="primary" @click="dialog.cadastrar = true" /> -->
+          <q-btn icon="person_add_alt" color="primary" @click="dialog.cadastrar = true" />
         </div>
         <div class="q-pa-md">
           <q-btn icon="person_add_alt" color="primary" @click="dialog.cadastrar = true" />
         </div>
-      </div>
+      </div> -->
       <q-table
         :rows="usuarios.data"
         :columns="columns"
@@ -41,6 +41,14 @@
             @keyup.enter="buscarDados"
           >
             <template #before>
+              <q-btn
+                class="q-mr-sm"
+                icon="person_add_alt"
+                label="CRIAR MOTORISTA"
+                color="primary"
+                @click="dialog.cadastrar = true"
+              />
+
               <q-btn-toggle
                 @update:model-value="
                   (val) => {
@@ -141,7 +149,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { api } from 'boot/axios'
-import CriarUsuario from 'src/components/usuarios/CriarUsuario.vue'
+import CriarMotorista from 'src/components/motorista/CriarMotorista.vue'
 import MostrarUsuario from 'src/components/usuarios/MostrarUsuario.vue'
 import EditarUsuario from 'src/components/usuarios/EditarUsuario.vue'
 import ExcluirUsuario from 'src/components/usuarios/ExcluirUsuario.vue'

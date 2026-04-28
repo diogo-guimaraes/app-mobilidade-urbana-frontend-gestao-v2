@@ -59,30 +59,30 @@
           </q-select>
         </q-card-section>
       </q-card>
-      <q-dialog v-model="dialog" @before-hide="onBeforeHideSecondary">
-        <q-card style="width: 500px; max-width: 50vw">
-          <q-card-section class="row items-center q-pb-none">
-            <span class="text-h6">Confirme a inclusão do veículo ao motorista</span>
-          </q-card-section>
-          <q-card-section>
-            <div class="row wrap justify-between items-start content-start">
-              <CardPerfilVeiculo :veiculo="veiculo" />
-              <CardPerfilUsuario :usuario="usuario" />
-            </div>
-          </q-card-section>
-          <q-card-actions align="right">
-            <q-btn flat label="CANCELAR" color="primary" :loading="loading" v-close-popup />
-            <q-btn
-              flat
-              label="confirmar"
-              color="green"
-              :loading="loading"
-              icon-right="done"
-              @click="adicionarVeiculoAoMotorista()"
-            />
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
+    </q-dialog>
+    <q-dialog v-model="dialog" @before-hide="onBeforeHideSecondary">
+      <q-card style="width: 500px; max-width: 50vw">
+        <q-card-section class="row items-center q-pb-none">
+          <span class="text-h6">Confirme a inclusão do veículo ao motorista</span>
+        </q-card-section>
+        <q-card-section>
+          <div class="row wrap justify-between items-start content-start">
+            <CardPerfilVeiculo :veiculo="veiculo" />
+            <CardPerfilUsuario :usuario="usuario" />
+          </div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="CANCELAR" color="primary" :loading="loading" v-close-popup />
+          <q-btn
+            flat
+            label="confirmar"
+            color="green"
+            :loading="loading"
+            icon-right="done"
+            @click="adicionarVeiculoAoMotorista()"
+          />
+        </q-card-actions>
+      </q-card>
     </q-dialog>
   </section>
 </template>
@@ -119,7 +119,16 @@ const veiculo = ref('')
 
 watch(model, (val) => {
   if (!val) {
-    emit('hide')
+    emit('hide', dialog.value)
+  }
+})
+
+watch(dialog, (val) => {
+  if (val) {
+    if (!val) {
+      emit('hide')
+    }
+    model.value = false
   }
 })
 
@@ -177,6 +186,7 @@ const adicionarVeiculoAoMotorista = async () => {
       veiculo_id: veiculo.value?.id,
     })
     console.log(response, 'err')
+    emit('hide', dialog.value)
     emit('onRequest')
 
     $q.notify({ type: 'positive', message: 'Veículo adicionado com sucesso' })
@@ -188,6 +198,7 @@ const adicionarVeiculoAoMotorista = async () => {
     loading.value = false
     dialog.value = false
     model.value = false
+    emit('hide', dialog.value)
   }
 }
 </script>

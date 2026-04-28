@@ -11,14 +11,14 @@
       v-model="dialog.excluir"
     />
     <q-card>
-      <div class="row wrap justify-between items-start content-start">
+      <!-- <div class="row wrap justify-between items-start content-start">
         <div>
-          <!-- <q-btn icon="person_add_alt" color="primary" @click="dialog.cadastrar = true" /> -->
+          <q-btn icon="person_add_alt" color="primary" @click="dialog.cadastrar = true" />
         </div>
         <div class="q-pa-md">
           <q-btn icon="person_add_alt" color="primary" @click="dialog.cadastrar = true" />
         </div>
-      </div>
+      </div> -->
       <q-table
         :rows="usuarios.data"
         :columns="columns"
@@ -42,6 +42,13 @@
             @keyup.enter="buscarDados"
           >
             <template #before>
+              <q-btn
+                icon="person_add_alt"
+                color="primary"
+                @click="dialog.cadastrar = true"
+                label="CRIAR USUÁRIO"
+                class="q-mr-sm"
+              />
               <q-btn-toggle
                 @update:model-value="
                   (val) => {
@@ -117,11 +124,11 @@
                   Documentos
                 </q-tooltip>
               </q-btn>
-              <q-btn dense flat icon="directions_car">
+              <!-- <q-btn dense flat icon="directions_car">
                 <q-tooltip transition-show="flip-right" transition-hide="flip-left">
                   Veículos
                 </q-tooltip>
-              </q-btn>
+              </q-btn> -->
 
               <q-btn @click="openExcluir(props.row)" dense flat icon="delete">
                 <q-tooltip transition-show="flip-right" transition-hide="flip-left">

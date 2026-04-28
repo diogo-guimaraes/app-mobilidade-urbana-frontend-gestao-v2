@@ -4,22 +4,40 @@
       :usuario="usuario"
       @onRequest="onRequest()"
       v-model="dialog"
-      @hide="reabrirPrincipal"
+      @hide="reabrirPrincipal($event)"
     />
     <q-dialog v-model="model" @before-show="beforeShow" @before-hide="onBeforeHide">
-      <q-card style="width: 600px; max-width: 50vw">
+      <q-card>
         <q-toolbar>
-          <q-avatar rounded size="md" icon="directions_car" color="primary" text-color="white" />
+          <!-- <q-avatar rounded size="md" icon="directions_car" color="primary" text-color="white" /> -->
           <q-toolbar-title>
-            <span class="text-weight-bold"> Veículos do motorista </span>
+            Veículos do motorista
+            <!-- <span> Veículos do motorista </span> -->
           </q-toolbar-title>
 
           <q-btn flat round dense icon="close" v-close-popup />
         </q-toolbar>
 
         <q-separator />
+        <CardPerfilUsuario class="q-mt-sm" :usuario="usuario" />
 
-        <q-card-section>
+        <q-card-section align="center" v-if="!data.length">
+          <div style="font-size: 20px" class="text-weight-bold">Nenhum veículo cadastrado</div>
+
+          <q-card class="my-card bg-primary text-white q-mt-md">
+            <!-- <q-card-section>
+              <div class="text-h6">Nenhum veículo cadastrado</div>
+            </q-card-section> -->
+
+            <q-icon size="150px" name="data_array" />
+          </q-card>
+          <q-card-actions class="q-mt-md" align="center">
+            <q-btn color="primary" @click="abrirAdicionarVeiculo()" flat>ADICIONAR VEÍCULO</q-btn>
+          </q-card-actions>
+        </q-card-section>
+        <q-separator />
+
+        <q-card-section v-if="data.length">
           <div class="q-pa-xs">
             <q-table
               :rows="data"
@@ -111,6 +129,8 @@
 <script setup>
 import { computed, ref } from 'vue'
 import AdicionarVeiculo from 'src/components/motorista/AdicionarVeiculo.vue'
+import CardPerfilUsuario from 'src/components/usuarios/CardPerfilUsuario.vue'
+
 // import { useQuasar } from 'quasar'
 import { api } from 'boot/axios'
 
@@ -182,9 +202,11 @@ function onBeforeHide() {
   data.value = []
 }
 
-function reabrirPrincipal() {
-  console.log('passou em reabrirPrincipal')
-  model.value = true
+function reabrirPrincipal(valor) {
+  console.log(valor, 'passou em reabrirPrincipal')
+  if (!valor) {
+    model.value = true
+  }
 }
 
 function abrirAdicionarVeiculo() {
