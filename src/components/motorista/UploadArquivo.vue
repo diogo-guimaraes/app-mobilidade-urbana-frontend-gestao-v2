@@ -63,9 +63,17 @@
                 color="primary"
                 @click="$refs.stepper.previous(), (file = null)"
                 label="VOLTAR"
+                icon="arrow_back"
               />
+              <!-- <q-icon
+                @click="$refs.stepper.previous()"
+                size="30px"
+                name="arrow_back"
+                color="primary"
+                class="cursor-pointer"
+              /> -->
               <q-card-section>
-                <q-item>
+                <q-item class="q-mt-sm">
                   <q-item-section top avatar>
                     <q-avatar rounded>
                       <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
