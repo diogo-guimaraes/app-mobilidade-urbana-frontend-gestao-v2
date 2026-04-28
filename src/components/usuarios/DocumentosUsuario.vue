@@ -4,109 +4,153 @@
       <UploadArquivo :usuarioId="usuarioId" @onRequest="onRequest()" v-model="dialog" />
       <q-card style="width: 600px; max-width: 50vw">
         <!-- HEADER -->
-        <q-toolbar>
-          <q-avatar rounded size="md" icon="list_alt" color="primary" text-color="white" />
-          <q-toolbar-title>
-            <span class="text-weight-bold"> Documentos do motorista </span>
-          </q-toolbar-title>
+        <q-stepper v-model="step" ref="stepper" color="primary" animated>
+          <q-step :name="1" title="Selecione o documento" icon="settings" :done="step > 1">
+            <!-- <q-toolbar>
+              <q-avatar size="xl" icon="list_alt" />
+              <q-toolbar-title>
+                <span class="text-weight-bold"> Documentos do motorista </span>
+              </q-toolbar-title>
 
-          <q-btn flat round dense icon="close" v-close-popup />
-        </q-toolbar>
+              <q-btn flat round dense icon="close" v-close-popup />
+            </q-toolbar>
 
-        <q-separator />
-        <!-- <pre>
+            <q-separator /> -->
+            <!-- <pre>
           {{ data }}
         </pre> -->
-        <q-card-section>
-          <div class="q-pa-xs">
             <q-table
-              :loading="loading"
-              flat
               bordered
+              flat
               :rows="data"
               :columns="columns"
-              row-key="id"
-              :pagination="pagination"
-              @request="onRequest"
-              hide-header
+              row-key="documento"
               hide-bottom
+              hide-header
             >
-              <template v-slot:top>
-                <q-btn
-                  icon-right="upload_file"
-                  label="Enviar documento"
-                  color="primary"
-                  class="full-width"
-                  @click="dialog = true"
-                />
-                <!-- <q-input filled dense v-model="search" placeholder="Pesquisar" class="full-width">
-                  <template v-slot:before>
-                    <q-btn @click="dialog = true" dense color="primary" icon="upload_file">
-                      <q-tooltip
-                        transition-show="rotate"
-                        transition-hide="rotate"
-                        content-class="bg-grey "
-                      >
-                        subir arquivo
-                      </q-tooltip>
-                    </q-btn>
-                  </template>
-                  <template v-slot:append>
-                    <q-icon v-if="search" name="close" class="cursor-pointer" />
-                  </template>
-                </q-input> -->
-              </template>
               <template v-slot:body="props">
-                <q-tr :props="props">
-                  <q-td key="name" :props="props">
+                <q-tr @click="selectRow(props.row)" :props="props">
+                  <q-td key="documento" :props="props">
                     <q-item>
                       <q-item-section top avatar>
-                        <q-avatar rounded>
-                          <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
+                        <q-avatar icon="attach_file" size="xl" rounded>
+                          <!-- <img src="https://cdn.quasar.dev/img/boy-avatar.png" /> -->
                         </q-avatar>
                       </q-item-section>
 
                       <q-item-section>
                         <q-item-label class="text-h6"> {{ props.row.documento }}</q-item-label>
                         <q-item-label class="estilo-coluna" caption>
-                          {{ props.row.name }}
+                          {{ props.row.descricao }}
                         </q-item-label>
-                        <div>
-                          <q-badge color="grey" :label="props.row.status" />
-                        </div>
                       </q-item-section>
-                      <!-- <q-item-section side top>
-                        <q-badge color="grey" :label="props.row.status" />
-                      </q-item-section> -->
                     </q-item>
                   </q-td>
-
-                  <q-td key="acoes" :props="props">
-                    <q-btn class="q-ml-sm" icon="download" size="sm" flat dense>
-                      <q-tooltip
-                        transition-show="rotate"
-                        transition-hide="rotate"
-                        content-class="bg-grey "
-                      >
-                        download
-                      </q-tooltip>
-                    </q-btn>
-
-                    <q-btn class="q-ml-sm" icon="delete" size="sm" flat dense>
-                      <q-tooltip
-                        transition-show="rotate"
-                        transition-hide="rotate"
-                        content-class="bg-grey "
-                      >
-                        arquivar
-                      </q-tooltip>
-                    </q-btn>
+                  <q-td key="acoes">
+                    <q-icon color="grey" size="sm" name="arrow_forward_ios" />
                   </q-td>
                 </q-tr>
               </template>
             </q-table>
-          </div>
-        </q-card-section>
+          </q-step>
+
+          <q-step :name="2" title="Envie o ducmento" icon="upload_file" :done="step > 2">
+            <q-icon
+              @click="$refs.stepper.previous()"
+              size="30px"
+              name="arrow_back"
+              color="primary"
+              class="cursor-pointer"
+            />
+            <!-- <q-card-section>
+              <CardPerfilUsuario :usuario="usuario" />
+              <div class="row">
+                <div class="col-md-6 col-12">
+                  <q-item>
+                    <q-input
+                      class="full-width"
+                      v-model="usuario.cnh_numero"
+                      label="Número CNH *"
+                      outlined
+                      dense
+                      :rules="[(val) => val.length >= 11 || 'Campo obrigatório']"
+                      onkeypress="return /[0-9]/i.test(event.key)"
+                      maxlength="11"
+                    />
+                  </q-item>
+                </div>
+                <div class="col-md-6 col-12">
+                  <q-item>
+                    <q-select
+                      v-model="usuario.cnh_categoria"
+                      dense
+                      outlined
+                      class="full-width"
+                      label="Categoira CNH *"
+                      :options="CnhCategorias"
+                      map-options
+                      :rules="[(val) => !!val || 'Campo obrigatório']"
+                    />
+                  </q-item>
+                </div>
+                <div class="col-md-6 col-12">
+                  <q-item>
+                    <q-input
+                      class="full-width"
+                      label="Expiração CNH"
+                      dense
+                      mask="##/##/####"
+                      outlined
+                      v-model="usuario.cnh_expiracao"
+                      :rules="[(data_inicial) => validateDateFormat(data_inicial)]"
+                    >
+                      <template v-slot:append>
+                        <q-icon name="event" class="cursor-pointer">
+                          <q-popup-proxy
+                            ref="qDateProxy"
+                            transition-show="scale"
+                            transition-hide="scale"
+                          >
+                            <q-date
+                              v-model="usuario.cnh_expiracao"
+                              mask="DD/MM/YYYY"
+                              @input="() => inputData()"
+                            ></q-date>
+                          </q-popup-proxy>
+                        </q-icon>
+                      </template>
+                    </q-input>
+                  </q-item>
+                </div>
+
+                <div class="col-md-6 col-12">
+                  <q-checkbox
+                    size="md"
+                    :true-value="1"
+                    :false-value="0"
+                    v-model="usuario.ear"
+                    label="POSSIU EAR"
+                  />
+                </div>
+              </div>
+              <div align="center">
+                <q-btn
+                  icon-right="done"
+                  label="CRIAR MOTORISTA"
+                  color="primary"
+                  class="full-width q-mt-md"
+                  @click="criarMotorista()"
+                />
+              </div>
+            </q-card-section> -->
+          </q-step>
+
+          <template v-slot:message>
+            <q-banner v-if="step === 1 || step === 2" class="bg-primary text-white q-px-lg">
+              Enviar documentos
+            </q-banner>
+          </template>
+        </q-stepper>
       </q-card>
     </q-dialog>
   </section>
@@ -137,10 +181,30 @@ const model = computed({
 })
 
 // STATE
+const step = ref(1)
 const loading = ref(false)
 const search = ref('')
 const dialog = ref(false)
-const data = ref([])
+// const data = ref([])
+const data = ref([
+  {
+    documento: 'CNH',
+    descricao: 'CARTEIRA NACIONAL DE HABILITAÇÃO',
+  },
+
+  {
+    documento: 'SEGURO',
+    descricao: 'SEGURO OBRIGATÓRIO',
+  },
+  {
+    documento: 'VEÍCULO - CRLV',
+    descricao: 'CERTIFICADO DE REGISTRO E LICENCIAMENTE DO VEÍCULO',
+  },
+  {
+    documento: 'NADA CONSTA',
+    descricao: 'CERTIDÃO NEGATIVA DE ANTECEDENTES CRIMINAIS',
+  },
+])
 
 const pagination = ref({
   page: 1,
@@ -149,12 +213,9 @@ const pagination = ref({
 
 const columns = [
   {
-    name: 'name',
-    required: true,
+    name: 'documento',
     label: 'Documentos',
     align: 'left',
-    field: (row) => row.name,
-    format: (val) => `${val}`,
   },
   {
     name: 'acoes',
@@ -166,8 +227,8 @@ const columns = [
 
 // LIFECYCLE
 function beforeShow() {
-  data.value = []
-  request()
+  // data.value = []
+  // request()
 }
 
 function onBeforeHide() {
@@ -175,6 +236,17 @@ function onBeforeHide() {
 }
 
 // ACTION
+
+function selectRow() {
+  // usuario.value = {
+  //   cnh_numero: usuario.value.cnh_numero ?? '',
+  //   cnh_categoria: usuario.value.cnh_categoria ?? '',
+  //   cnh_expiracao: usuario.value.cnh_expiracao ?? '',
+  //   ear: usuario.value.ear ?? 0,
+  //   ...row,
+  // }
+  // stepper.value.next()
+}
 
 const onRequest = async (props) => {
   console.log(props, 'props')

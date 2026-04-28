@@ -174,6 +174,10 @@ const data = ref([
     documento: 'VEÍCULO - CRLV',
     descricao: 'CERTIFICADO DE REGISTRO E LICENCIAMENTE DO VEÍCULO',
   },
+  {
+    documento: 'NADA CONSTA',
+    descricao: 'CERTIDÃO NEGATIVA DE ANTECEDENTES CRIMINAIS',
+  },
 ])
 
 const columns = [

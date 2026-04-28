@@ -31,7 +31,7 @@
                 </template>
 
                 <template #body="props">
-                  <q-tr @click="selecionarUsuario(props.row)" class="cursor-pointer" :props="props">
+                  <q-tr @click="selectRow(props.row)" class="cursor-pointer" :props="props">
                     <q-td key="id">{{ props.row.id }}</q-td>
 
                     <q-td key="motorista">
@@ -266,7 +266,7 @@ const stepper = ref(null)
 
 function beforeHide() {}
 
-function selecionarUsuario(row) {
+function selectRow(row) {
   usuario.value = {
     cnh_numero: usuario.value.cnh_numero ?? '',
     cnh_categoria: usuario.value.cnh_categoria ?? '',
