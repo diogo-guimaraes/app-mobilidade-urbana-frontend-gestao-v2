@@ -50,6 +50,7 @@
               />
 
               <q-btn-toggle
+                class="q-mr-sm"
                 @update:model-value="
                   (val) => {
                     dominio = val
