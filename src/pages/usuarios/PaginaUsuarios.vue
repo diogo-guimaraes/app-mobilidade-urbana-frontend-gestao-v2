@@ -20,7 +20,7 @@
         </div>
       </div> -->
       <q-table
-        :rows="usuarios.data"
+        :rows="data"
         :columns="columns"
         row-key="id"
         :pagination="pagination"
@@ -28,10 +28,8 @@
         :loading="loading"
         @request="onRequest"
       >
-        <!-- TOPO -->
         <template #top>
           <q-space />
-
           <q-input
             class="full-width"
             filled
@@ -39,7 +37,7 @@
             debounce="300"
             v-model="search"
             placeholder="Pesquisar"
-            @keyup.enter="buscarDados"
+            @keyup.enter="request"
           >
             <template #before>
               <q-btn
@@ -50,10 +48,11 @@
                 class="q-mr-sm"
               />
               <q-btn-toggle
+                class="q-mr-sm"
                 @update:model-value="
                   (val) => {
                     dominio = val
-                    buscarDados()
+                    request()
                   }
                 "
                 v-model="dominio"
@@ -64,47 +63,18 @@
                 ]"
               />
             </template>
-
             <template v-if="search" #append>
               <q-icon name="close" class="cursor-pointer" @click="clearSearch" />
             </template>
-
-            <!-- <template #after>
-              <q-btn round dense flat icon="search" @click="buscarDados" />
-
-              <q-btn flat round dense :icon="grid ? 'list' : 'grid_on'" @click="toggleGrid" />
-            </template> -->
           </q-input>
         </template>
 
-        <!-- LISTA -->
         <template #body="props">
           <q-tr :props="props">
             <q-td key="id">{{ props.row.id }}</q-td>
 
             <q-td key="nome">
-              <q-item>
-                <q-item-section top avatar>
-                  <q-avatar v-if="props.row.foto_thumbnail">
-                    <img :src="props.row.foto" />
-                  </q-avatar>
-                  <q-avatar v-else color="primary" text-color="white">
-                    {{ props.row.name.substr(0, 1) }}
-                  </q-avatar>
-                  <q-badge class="q-mt-sm" :color="badgeColor(props.row.status)">
-                    {{ props.row.status }}
-                  </q-badge>
-                </q-item-section>
-
-                <q-item-section>
-                  <q-item-label class="text-bold"> {{ props.row.name }}</q-item-label>
-                  <q-item-label class="estilo-coluna">
-                    {{ props.row.email }}
-                    <div>CPF: {{ props.row.cpf }}</div>
-                    <div>TEL: {{ props.row.telefone }}</div>
-                  </q-item-label>
-                </q-item-section>
-              </q-item>
+              <CardPerfilUsuario class="q-mt-sm" :usuario="props.row" />
             </q-td>
 
             <q-td key="acoes" align="center">
@@ -124,11 +94,6 @@
                   Documentos
                 </q-tooltip>
               </q-btn>
-              <!-- <q-btn dense flat icon="directions_car">
-                <q-tooltip transition-show="flip-right" transition-hide="flip-left">
-                  Veículos
-                </q-tooltip>
-              </q-btn> -->
 
               <q-btn @click="openExcluir(props.row)" dense flat icon="delete">
                 <q-tooltip transition-show="flip-right" transition-hide="flip-left">
@@ -176,13 +141,10 @@ import MostrarUsuario from 'src/components/usuarios/MostrarUsuario.vue'
 import EditarUsuario from 'src/components/usuarios/EditarUsuario.vue'
 import ExcluirUsuario from 'src/components/usuarios/ExcluirUsuario.vue'
 import DocumentosUsuario from 'src/components/usuarios/DocumentosUsuario.vue'
+import CardPerfilUsuario from 'src/components/usuarios/CardPerfilUsuario.vue'
 
 // STATES
-const usuarios = ref({
-  success: true,
-  data: [],
-})
-
+const data = ref([])
 const dominio = ref('users')
 const usuarioSelecionado = ref(null)
 const openPress = ref(null)
@@ -210,20 +172,10 @@ const columns = [
   { name: 'acoes', label: 'Ações', align: 'center' },
 ]
 
-const badgeColor = (status) => {
-  if (status === 'aprovado') return 'green'
-  if (status === 'suspenso') return 'orange'
-  if (status === 'banido') return 'red'
-}
-
-// const toggleGrid = () => {
-//   grid.value = !grid.value
-// }
-
 const clearSearch = () => {
   search.value = ''
   pagination.value.page = 1
-  buscarDados()
+  request()
 }
 
 const openEditar = (id) => {
@@ -237,8 +189,7 @@ const openExcluir = (usuario) => {
   dialog.excluir = true
 }
 
-const buscarDados = async (props) => {
-  console.log(dominio.value, 'dominio value')
+const request = async (props) => {
   loading.value = true
   const { page, rowsPerPage } = props ? props.pagination : pagination
   try {
@@ -250,16 +201,12 @@ const buscarDados = async (props) => {
       },
     })
 
-    const data = response.data
+    data.value = response.data.data
 
-    usuarios.value = {
-      success: true,
-      data: data.data, // array de usuários
-    }
-
-    pagination.value.rowsNumber = data.total
-    pagination.value.page = data.current_page
-    pagination.value.rowsPerPage = data.per_page === data.total ? 0 : data.per_page
+    const paginate = response.data
+    pagination.value.rowsNumber = paginate.total
+    pagination.value.page = paginate.current_page
+    pagination.value.rowsPerPage = paginate.per_page === paginate.total ? 0 : paginate.per_page
   } catch (error) {
     console.error(error)
   } finally {
@@ -267,13 +214,12 @@ const buscarDados = async (props) => {
   }
 }
 const onRequest = async (props) => {
-  console.log(props, 'props')
-  await buscarDados(props)
+  await request(props)
 }
 
 // LIFECYCLE
 onMounted(() => {
-  buscarDados()
+  request()
 })
 </script>
 
