@@ -103,13 +103,15 @@
                     <q-btn round dense flat icon="add" @click.stop.prevent />
                   </template>
                 </q-file>
-                <q-btn
-                  v-if="file"
-                  @click="request()"
-                  label="Enviar"
-                  color="primary"
-                  class="full-width q-mt-md"
-                />
+                <div class="q-mt-md" align="center">
+                  <q-btn
+                    v-if="file"
+                    @click="request()"
+                    label="Enviar"
+                    color="primary"
+                    class="q-mt-md"
+                  />
+                </div>
               </q-card-section>
             </q-step>
 
