@@ -6,7 +6,7 @@
         <q-toolbar>
           <q-avatar rounded size="lg" icon="file_present" color="primary" text-color="white" />
           <q-toolbar-title>
-            <span class="text-weight-bold">Upload de arquivo</span>
+            <span class="text-weight-bold">Enviar documentos</span>
           </q-toolbar-title>
 
           <q-btn flat round dense icon="close" v-close-popup />
@@ -56,8 +56,16 @@
             </q-step>
 
             <q-step :name="2" title="Selecionar documento" icon="upload_file" :done="step > 2">
+              <q-btn
+                class="q-pa-none"
+                v-if="step > 1"
+                flat
+                color="primary"
+                @click="$refs.stepper.previous(), (file = null)"
+                label="VOLTAR"
+              />
               <q-card-section>
-                <q-item class="q-pa-none">
+                <q-item>
                   <q-item-section top avatar>
                     <q-avatar rounded>
                       <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
@@ -105,14 +113,6 @@
                   label="Continue"
                   v-if="step === 1"
                   :disable="selected.length ? false : true"
-                />
-                <q-btn
-                  v-if="step > 1"
-                  flat
-                  color="primary"
-                  @click="$refs.stepper.previous(), (file = null)"
-                  label="VOLTAR"
-                  class="q-ml-sm"
                 />
               </q-stepper-navigation>
             </template>
