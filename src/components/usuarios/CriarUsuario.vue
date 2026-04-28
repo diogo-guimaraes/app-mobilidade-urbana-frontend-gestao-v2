@@ -117,7 +117,7 @@
                 </q-item>
               </div>
 
-              <div class="col-md-12 col-12">
+              <div class="col-md-6 col-12">
                 <q-item>
                   <q-input
                     class="full-width"
@@ -129,20 +129,6 @@
                   />
                 </q-item>
               </div>
-              <div class="col-md-6 col-12">
-                <q-item>
-                  <q-select
-                    class="full-width"
-                    v-model="usuario.type"
-                    :options="userTypes"
-                    label="Usuario"
-                    outlined
-                    dense
-                    :rules="[(val) => !!val || 'Campo obrigatório']"
-                  />
-                </q-item>
-              </div>
-
               <div class="col-md-6 col-12">
                 <q-item>
                   <q-input
@@ -199,9 +185,6 @@ const model = computed({
 
 const image = ref(null)
 const imagemProfile = ref('')
-
-// MOCK (substitui Vuex)
-const userTypes = ref(['passageiro', 'motorista', 'gestao'])
 
 // FORM
 const usuario = reactive({
@@ -264,7 +247,6 @@ function limparForm() {
     data_nascimento: '',
     email: '',
     password: '',
-    type: '',
   })
 }
 

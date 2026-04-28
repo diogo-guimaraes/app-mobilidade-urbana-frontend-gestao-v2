@@ -103,18 +103,6 @@
         <div class="col-12 q-px-md q-py-sm">
           <q-input dense outlined v-model="user.email" label="Email *" />
         </div>
-
-        <div class="col-12 q-px-md q-py-sm">
-          <q-select
-            class="full-width"
-            v-model="user.type"
-            :options="userTypes"
-            label="Usuario"
-            outlined
-            dense
-            :rules="[(val) => !!val || 'Campo obrigatório']"
-          />
-        </div>
       </div>
       <!-- <loading-dialog v-else /> -->
     </q-card>
@@ -153,7 +141,6 @@ const user = reactive({
   data_nascimento: '',
   email: '',
 })
-const userTypes = ref(['passageiro', 'motorista', 'gestao'])
 
 const loadingDialog = ref(false)
 

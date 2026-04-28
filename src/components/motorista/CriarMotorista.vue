@@ -1,160 +1,152 @@
 <template>
   <div>
-    <q-dialog v-model="model" @before-show="onBeforeShow" @before-hide="quandoDialogFechar">
+    <q-dialog v-model="model" @before-show="onBeforeShow" @before-hide="beforeHide">
       <q-card style="width: 700px; max-width: 80vw">
-        <div>
-          <q-stepper v-model="step" ref="stepper" color="primary" animated>
-            <q-step :name="1" title="Selecione o usuário" icon="settings" :done="step > 1">
-              <q-card>
-                <q-table
-                  :rows="usuarios.data"
-                  :columns="columns"
-                  row-key="id"
-                  :pagination="pagination"
-                  :loading="loading"
-                  @request="onRequest"
-                >
-                  <template #top>
-                    <q-space />
+        <q-stepper v-model="step" ref="stepper" color="primary" animated>
+          <q-step :name="1" title="Selecione o usuário" icon="settings" :done="step > 1">
+            <q-card>
+              <q-table
+                :rows="usuarios.data"
+                :columns="columns"
+                row-key="id"
+                :pagination="pagination"
+                :loading="loading"
+                @request="onRequest"
+              >
+                <template #top>
+                  <q-space />
+                  <q-input
+                    class="full-width"
+                    filled
+                    dense
+                    debounce="300"
+                    v-model="search"
+                    placeholder="Pesquisar"
+                    @keyup.enter="buscarDados"
+                  >
+                    <template v-if="search" #append>
+                      <q-icon name="close" class="cursor-pointer" @click="clearSearch" />
+                    </template>
+                  </q-input>
+                </template>
+
+                <template #body="props">
+                  <q-tr @click="selecionarUsuario(props.row)" class="cursor-pointer" :props="props">
+                    <q-td key="id">{{ props.row.id }}</q-td>
+
+                    <q-td key="motorista">
+                      <q-item>
+                        <q-item-section top avatar>
+                          <q-avatar v-if="props.row.foto_thumbnail">
+                            <img :src="props.row.foto" />
+                          </q-avatar>
+                          <q-avatar v-else color="primary" text-color="white">
+                            {{ props.row.name.substr(0, 1) }}
+                          </q-avatar>
+                          <q-badge class="q-mt-sm" :color="badgeColor(props.row.status)">
+                            {{ props.row.status }}
+                          </q-badge>
+                        </q-item-section>
+
+                        <q-item-section>
+                          <q-item-label class="text-bold"> {{ props.row.name }}</q-item-label>
+                          <q-item-label class="estilo-coluna">
+                            {{ props.row.email }}
+                            <div>CPF: {{ props.row.cpf }}</div>
+                            <div>TEL: {{ props.row.telefone }}</div>
+                          </q-item-label>
+                        </q-item-section>
+                      </q-item>
+                    </q-td>
+                    <q-td key="acoes">
+                      <q-icon color="grey" size="sm" name="arrow_forward_ios" />
+                    </q-td>
+                  </q-tr>
+                </template>
+              </q-table>
+            </q-card>
+          </q-step>
+
+          <q-step :name="2" title="Confirmar registro" icon="upload_file" :done="step > 2">
+            <q-icon
+              @click="$refs.stepper.previous()"
+              size="30px"
+              name="arrow_back"
+              color="primary"
+              class="cursor-pointer"
+            />
+            <q-card-section>
+              <CardPerfilUsuario :usuario="usuario" />
+              <div class="row">
+                <div class="col-md-6 col-12">
+                  <q-item>
                     <q-input
                       class="full-width"
-                      filled
+                      v-model="usuario.cnh_numero"
+                      label="Número CNH *"
+                      outlined
                       dense
-                      debounce="300"
-                      v-model="search"
-                      placeholder="Pesquisar"
-                      @keyup.enter="buscarDados"
+                      :rules="[(val) => val.length >= 11 || 'Campo obrigatório']"
+                      onkeypress="return /[0-9]/i.test(event.key)"
+                      maxlength="11"
+                    />
+                  </q-item>
+                </div>
+                <div class="col-md-6 col-12">
+                  <q-item>
+                    <q-select
+                      v-model="usuario.cnh_categoria"
+                      dense
+                      outlined
+                      class="full-width"
+                      label="Categoira CNH *"
+                      :options="CnhCategorias"
+                      map-options
+                      :rules="[(val) => !!val || 'Campo obrigatório']"
+                    />
+                  </q-item>
+                </div>
+                <div class="col-md-6 col-12">
+                  <q-item>
+                    <q-input
+                      class="full-width"
+                      label="Expiração CNH"
+                      dense
+                      mask="##/##/####"
+                      outlined
+                      v-model="usuario.cnh_expiracao"
+                      :rules="[(data_inicial) => validateDateFormat(data_inicial)]"
                     >
-                      <template v-if="search" #append>
-                        <q-icon name="close" class="cursor-pointer" @click="clearSearch" />
+                      <template v-slot:append>
+                        <q-icon name="event" class="cursor-pointer">
+                          <q-popup-proxy
+                            ref="qDateProxy"
+                            transition-show="scale"
+                            transition-hide="scale"
+                          >
+                            <q-date
+                              v-model="usuario.cnh_expiracao"
+                              mask="DD/MM/YYYY"
+                              @input="() => inputData()"
+                            ></q-date>
+                          </q-popup-proxy>
+                        </q-icon>
                       </template>
                     </q-input>
-                  </template>
-
-                  <template #body="props">
-                    <q-tr
-                      @click="
-                        () => {
-                          usuario = props.row
-                          $refs.stepper.next()
-                        }
-                      "
-                      class="cursor-pointer"
-                      :props="props"
-                    >
-                      <q-td key="id">{{ props.row.id }}</q-td>
-
-                      <q-td key="motorista">
-                        <q-item>
-                          <q-item-section top avatar>
-                            <q-avatar v-if="props.row.foto_thumbnail">
-                              <img :src="props.row.foto" />
-                            </q-avatar>
-                            <q-avatar v-else color="primary" text-color="white">
-                              {{ props.row.name.substr(0, 1) }}
-                            </q-avatar>
-                            <q-badge class="q-mt-sm" :color="badgeColor(props.row.status)">
-                              {{ props.row.status }}
-                            </q-badge>
-                          </q-item-section>
-
-                          <q-item-section>
-                            <q-item-label class="text-bold"> {{ props.row.name }}</q-item-label>
-                            <q-item-label class="estilo-coluna">
-                              {{ props.row.email }}
-                              <div>CPF: {{ props.row.cpf }}</div>
-                              <div>TEL: {{ props.row.telefone }}</div>
-                            </q-item-label>
-                          </q-item-section>
-                        </q-item>
-                      </q-td>
-                      <q-td key="acoes">
-                        <q-icon color="grey" size="sm" name="arrow_forward_ios" />
-                      </q-td>
-                    </q-tr>
-                  </template>
-                </q-table>
-              </q-card>
-            </q-step>
-
-            <q-step :name="2" title="Confirmar registro" icon="upload_file" :done="step > 2">
-              <q-icon
-                @click="$refs.stepper.previous()"
-                size="30px"
-                name="arrow_back"
-                color="primary"
-                class="cursor-pointer"
-              />
-              <q-card-section>
-                <pre>
-                  {{ usuario }}
-                </pre>
-                <CardPerfilUsuario :usuario="usuario" />
-                <div class="row">
-                  <div class="col-md-6 col-12">
-                    <q-item>
-                      <q-input
-                        class="full-width"
-                        v-model="usuario.cnh_numero"
-                        label="Número CNH *"
-                        outlined
-                        dense
-                        :rules="[(val) => val.length >= 3 || 'Campo obrigatório']"
-                      />
-                    </q-item>
-                  </div>
-                  <div class="col-md-6 col-12">
-                    <q-item>
-                      <q-input
-                        class="full-width"
-                        v-model="usuario.cnh_categoria"
-                        label="Categoria CNH *"
-                        outlined
-                        dense
-                        :rules="[(val) => val.length >= 0 || 'Campo obrigatório']"
-                      />
-                    </q-item>
-                  </div>
-                  <div class="col-md-6 col-12">
-                    <q-item>
-                      <q-input
-                        class="full-width"
-                        label="Expiração CNH"
-                        dense
-                        mask="##/##/####"
-                        outlined
-                        v-model="usuario.cnh_expiracao"
-                        :rules="[(data_inicial) => validateDateFormat(data_inicial)]"
-                      >
-                        <template v-slot:append>
-                          <q-icon name="event" class="cursor-pointer">
-                            <q-popup-proxy
-                              ref="qDateProxy"
-                              transition-show="scale"
-                              transition-hide="scale"
-                            >
-                              <q-date
-                                v-model="usuario.cnh_expiracao"
-                                mask="DD/MM/YYYY"
-                                @input="() => inputData()"
-                              ></q-date>
-                            </q-popup-proxy>
-                          </q-icon>
-                        </template>
-                      </q-input>
-                    </q-item>
-                  </div>
-
-                  <div class="col-md-6 col-12">
-                    <q-checkbox
-                      size="md"
-                      :true-value="1"
-                      :false-value="0"
-                      v-model="usuario.ear"
-                      label="POSSIU EAR"
-                    />
-                  </div>
+                  </q-item>
                 </div>
+
+                <div class="col-md-6 col-12">
+                  <q-checkbox
+                    size="md"
+                    :true-value="1"
+                    :false-value="0"
+                    v-model="usuario.ear"
+                    label="POSSIU EAR"
+                  />
+                </div>
+              </div>
+              <div align="center">
                 <q-btn
                   icon-right="done"
                   label="CRIAR MOTORISTA"
@@ -162,10 +154,16 @@
                   class="full-width q-mt-md"
                   @click="criarMotorista()"
                 />
-              </q-card-section>
-            </q-step>
-          </q-stepper>
-        </div>
+              </div>
+            </q-card-section>
+          </q-step>
+
+          <template v-slot:message>
+            <q-banner v-if="step === 1 || step === 2" class="bg-primary text-white q-px-lg">
+              Criar novo morista
+            </q-banner>
+          </template>
+        </q-stepper>
       </q-card>
     </q-dialog>
   </div>
@@ -195,18 +193,15 @@ const model = computed({
   set: (val) => emit('update:modelValue', val),
 })
 const step = ref(1)
-// const selected = ref([])
-
-// const usuarioId = ref(null)
 
 const usuarios = ref({
   success: true,
   data: [],
 })
 
+const CnhCategorias = ref(['A', 'B'])
+
 const usuario = ref({
-  name: '',
-  user_id: '',
   cnh_numero: '',
   cnh_categoria: '',
   cnh_expiracao: '',
@@ -267,12 +262,25 @@ function validateDateFormat(date) {
 
 const loading = ref(null)
 const search = ref('')
+const stepper = ref(null)
 
-// METHODS
-function quandoDialogFechar() {}
+function beforeHide() {}
+
+function selecionarUsuario(row) {
+  usuario.value = {
+    cnh_numero: usuario.value.cnh_numero ?? '',
+    cnh_categoria: usuario.value.cnh_categoria ?? '',
+    cnh_expiracao: usuario.value.cnh_expiracao ?? '',
+    ear: usuario.value.ear ?? 0,
+    ...row,
+  }
+  stepper.value.next()
+}
 
 function onBeforeShow() {
   // simulação
+  step.value = 1
+  limparForm()
   console.log(onBeforeShow)
   buscarDados()
 }
@@ -297,6 +305,15 @@ const criarMotorista = async () => {
       console.log(err, 'err')
       $q.notify({ type: 'negative', message: err.response?.data?.message })
     })
+}
+
+function limparForm() {
+  usuario.value = {
+    cnh_numero: '',
+    cnh_categoria: '',
+    cnh_expiracao: '',
+    ear: 0,
+  }
 }
 const buscarDados = async (props) => {
   loading.value = true

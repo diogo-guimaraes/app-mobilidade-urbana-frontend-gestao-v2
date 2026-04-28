@@ -106,6 +106,9 @@
 
                   <q-td key="acoes" align="center">
                     <q-btn dense flat icon="visibility">
+                      <q-tooltip transition-show="flip-right" transition-hide="flip-left">
+                        visualizar
+                      </q-tooltip>
                       <template v-slot:loading>
                         <q-spinner-hourglass />
                       </template>

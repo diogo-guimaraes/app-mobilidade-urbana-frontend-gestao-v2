@@ -1,6 +1,6 @@
 <template>
   <q-page class="q-pa-md">
-    <CriarVeiculo @created="onRequest" v-model="dialog.criar" />
+    <CriarVeiculo @onRequest="onRequest" v-model="dialog.criar" />
     <EditarVeiculo @updated="onRequest" v-model="dialog.editar" :veiculoId="veiculoId" />
     <MostrarVeiculo v-model="dialog.mostrar" />
     <ExcluirVeiculo
@@ -33,24 +33,9 @@
             @keyup.enter="buscarDados"
           >
             <template #before>
-              <!-- <q-btn-toggle
-                @update:model-value="
-                  (val) => {
-                    dominio = val
-                    buscarDados()
-                  }
-                "
-                v-model="dominio"
-                toggle-color="primary"
-                :options="[
-                  { label: 'Ativos', value: 'users' },
-                  { label: 'Arquivados', value: 'usuarios-arquivados' },
-                ]"
-              />
-               -->
               <q-btn
                 icon="add_box"
-                label="ADICIONAR VEÍCULO"
+                label="CRIAR VEÍCULO"
                 color="primary"
                 @click="dialog.criar = true"
               />
@@ -59,16 +44,9 @@
             <template v-if="search" #append>
               <q-icon name="close" class="cursor-pointer" @click="clearSearch" />
             </template>
-
-            <!-- <template #after>
-              <q-btn round dense flat icon="search" @click="buscarDados" />
-
-              <q-btn flat round dense :icon="grid ? 'list' : 'grid_on'" @click="toggleGrid" />
-            </template> -->
           </q-input>
         </template>
 
-        <!-- LISTA -->
         <template #body="props">
           <q-tr :props="props">
             <q-td key="id">{{ props.row.id }}</q-td>
@@ -100,6 +78,9 @@
 
             <q-td key="acoes" align="center">
               <q-btn @click="openEditar(props.row.id)" dense flat icon="visibility">
+                <q-tooltip transition-show="flip-right" transition-hide="flip-left">
+                  visualizar
+                </q-tooltip>
                 <template v-slot:loading>
                   <q-spinner-hourglass />
                 </template>
@@ -115,11 +96,6 @@
                   Documentos
                 </q-tooltip>
               </q-btn>
-              <q-btn dense flat icon="directions_car">
-                <q-tooltip transition-show="flip-right" transition-hide="flip-left">
-                  Veículos
-                </q-tooltip>
-              </q-btn>
 
               <q-btn @click="openExcluir(props.row)" dense flat icon="delete">
                 <q-tooltip transition-show="flip-right" transition-hide="flip-left">
@@ -129,31 +105,6 @@
             </q-td>
           </q-tr>
         </template>
-
-        <!-- GRID -->
-        <!-- <template #item="props">
-          <div class="q-pa-xs col-xs-12 col-sm-6 col-md-3">
-            <q-card>
-              <q-item clickable @click="openEditar(props.row.id)">
-                <q-item-section avatar>
-                  <q-avatar size="70px">
-                    <img v-if="props.row.foto" :src="props.row.foto" />
-                    <span v-else>
-                      {{ props.row.name?.charAt(0) }}
-                    </span>
-                  </q-avatar>
-                </q-item-section>
-
-                <q-item-section>
-                  <q-item-label>{{ props.row.name }}</q-item-label>
-                  <q-item-label caption>
-                    {{ props.row.email }}
-                  </q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-card>
-          </div>
-        </template> -->
       </q-table>
     </q-card>
   </q-page>
