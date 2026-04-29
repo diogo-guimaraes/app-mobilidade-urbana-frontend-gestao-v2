@@ -3,7 +3,7 @@
     <CriarMotorista @created="onRequest" v-model="dialog.cadastrar" />
     <EditarUsuario @updated="onRequest" v-model="dialog.editar" :usuarioId="usuarioId" />
     <MostrarUsuario v-model="dialog.visualizar" />
-    <DocumentosUsuario :usuarioId="usuarioId" v-model="dialog.documentos" />
+    <DocumentosUsuario :usuario="usuario" v-model="dialog.documentos" />
     <MotoristaVeiculos :usuario="usuario" v-model="dialog.veiculos" />
     <ExcluirUsuario
       :acao="openPress"
@@ -109,7 +109,12 @@
               </q-btn>
 
               <q-btn
-                @click=";(dialog.documentos = true), (usuarioId = props.row.user.id)"
+                @click="
+                  () => {
+                    dialog.documentos = true
+                    usuario = props.row.user
+                  }
+                "
                 flat
                 dense
                 icon="list_alt"
