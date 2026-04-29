@@ -50,7 +50,19 @@
                     </q-item>
                   </q-td>
                   <q-td key="acoes">
-                    <q-icon color="grey" size="sm" name="arrow_forward_ios" />
+                    <q-icon
+                      color="grey"
+                      size="sm"
+                      :name="props.row.id ? 'arrow_forward_ios' : 'upload'"
+                    >
+                      <q-tooltip
+                        v-if="!props.row.id"
+                        transition-show="flip-right"
+                        transition-hide="flip-left"
+                      >
+                        enviar arquivo
+                      </q-tooltip>
+                    </q-icon>
                   </q-td>
                 </q-tr>
               </template>
