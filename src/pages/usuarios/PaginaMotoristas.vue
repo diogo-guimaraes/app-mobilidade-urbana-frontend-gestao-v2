@@ -225,7 +225,6 @@ const openExcluir = (usuario) => {
 }
 
 const buscarDados = async (props) => {
-  console.log(dominio.value, 'dominio value')
   loading.value = true
   const { page, rowsPerPage } = props ? props.pagination : pagination
   try {

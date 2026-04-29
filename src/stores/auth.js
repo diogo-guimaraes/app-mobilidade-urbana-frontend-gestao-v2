@@ -17,9 +17,7 @@ export const useAuthStore = defineStore("auth", () => {
   async function fetchUser() {
     try {
       const response = await api.get("/usuario-logado");
-      console.log(response.data, 'response');
       user.value = response.data;
-      console.log('user', user);
       return response;
     } catch (error) {
       logout();

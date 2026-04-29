@@ -22,7 +22,7 @@
         <CardPerfilUsuario class="q-mt-sm" :usuario="usuario" />
 
         <q-card-section align="center" v-if="!data.length">
-          <div style="font-size: 20px" class="text-weight-bold">Nenhum veículo cadastrado</div>
+          <!-- ;  <div style="font-size: 20px" class="text-weight-bold">Nenhum veículo cadastrado</div> -->
 
           <q-card class="my-card bg-primary text-white q-mt-md">
             <!-- <q-card-section>

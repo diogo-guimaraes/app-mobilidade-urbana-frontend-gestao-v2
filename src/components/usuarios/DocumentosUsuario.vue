@@ -4,11 +4,13 @@
       <q-card style="width: 600px; max-width: 50vw">
         <!-- HEADER -->
         <q-stepper v-model="step" ref="stepper" color="primary" animated>
-          <q-step :name="1" title="Selecione o tipo de documento" icon="settings" :done="step > 1">
+          <q-step :name="1" title="Documentos" icon="settings" :done="step > 1">
             <!-- <pre>
               {{ data }}
             </pre> -->
-            <CardPerfilUsuario :usuario="props.usuario" />
+            <!-- <q-card style="border-style: none"> -->
+            <CardPerfilUsuario :bordered="true" :usuario="props.usuario" />
+            <!-- </q-card> -->
 
             <q-table
               v-if="step === 1"
@@ -17,7 +19,7 @@
               flat
               :rows="data"
               :columns="columns"
-              row-key="documento"
+              row-key="tipo_documento"
               hide-bottom
               hide-header
             >
@@ -26,11 +28,8 @@
                   <q-td key="documento" :props="props">
                     <q-item>
                       <q-item-section top avatar>
-                        <q-avatar icon="attach_file" size="xl" rounded>
-                          <!-- <img src="https://cdn.quasar.dev/img/boy-avatar.png" /> -->
-                        </q-avatar>
+                        <q-avatar icon="attach_file" size="xl" rounded> </q-avatar>
                       </q-item-section>
-
                       <q-item-section>
                         <q-item-label class="text-h6"> {{ props.row.titulo }}</q-item-label>
                         <q-item-label class="estilo-coluna" caption>
@@ -69,7 +68,7 @@
             </q-table>
           </q-step>
 
-          <q-step :name="2" title="Envie o ducmento" icon="upload_file" :done="step > 2">
+          <q-step :name="2" title="" icon="info" :done="step > 2">
             <q-icon
               @click="$refs.stepper.previous()"
               size="30px"
@@ -77,20 +76,105 @@
               color="primary"
               class="cursor-pointer"
             />
-            <q-item>
+            <q-item class="q-mt-md">
               <q-item-section top avatar>
                 <q-avatar icon="attach_file" size="xl" rounded> </q-avatar>
               </q-item-section>
-
               <q-item-section>
                 <q-item-label class="text-h6"> {{ documentoSelecionado?.titulo }}</q-item-label>
                 <q-item-label class="estilo-coluna" caption>
                   {{ documentoSelecionado?.descricao }}
                 </q-item-label>
               </q-item-section>
+              <q-item-label caption>
+                <q-badge
+                  :color="badgeColor(documentoSelecionado?.status)"
+                  :label="
+                    documentoSelecionado?.status ? documentoSelecionado?.status : 'Não enviado'
+                  "
+                />
+
+                <q-btn
+                  v-if="documentoSelecionado?.status"
+                  class="q-ml-lg"
+                  @click.stop.prevent
+                  title="Menu"
+                  icon="linear_scale"
+                  dense
+                  flat
+                  round
+                >
+                  <q-menu>
+                    <q-list style="min-width: 100px">
+                      <q-item clickable v-close-popup>
+                        <q-item-section>Ver detalhes</q-item-section>
+                      </q-item>
+                      <q-item clickable v-close-popup>
+                        <q-item-section> reprovar documento </q-item-section>
+                      </q-item>
+                      <q-item clickable v-close-popup>
+                        <q-item-section>excluir</q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </q-btn>
+              </q-item-label>
             </q-item>
 
-            <div class="q-mt-md" align="center">
+            <div align="center" class="q-mt-md" v-if="documentoSelecionado?.status">
+              <div v-if="documentoSelecionado?.status === 'em_analise'" class="q-pa-md q-gutter-sm">
+                <div v-if="reprovar">
+                  <q-input
+                    dense
+                    outlined
+                    autogrow
+                    class="full-width q-px-md q-mb-md"
+                    v-model="documentoSelecionado.observacao"
+                    type="textarea"
+                    bottom-slots
+                    counter
+                    maxlength="2000"
+                  >
+                    <template v-slot:after>
+                      <q-btn
+                        @click="reprovar = true"
+                        style="width: 100px"
+                        dense
+                        color="red"
+                        label="REPROVAR"
+                      />
+                    </template>
+
+                    <template v-slot:hint> Caracteres </template>
+                  </q-input>
+                </div>
+
+                <div v-else>
+                  <q-btn
+                    @click="reprovar = true"
+                    style="width: 100px"
+                    dense
+                    color="red"
+                    label="REPROVAR"
+                  />
+                  <q-btn
+                    style="width: 100px"
+                    dense
+                    @click="
+                      () => {
+                        documentoId = documentoSelecionado?.id
+                        dialog.confirmacao = true
+                      }
+                    "
+                    color="green"
+                    label="APROVAR"
+                  />
+                </div>
+                <!-- <q-btn color="amber" glossy label="Amber" /> -->
+              </div>
+            </div>
+
+            <div v-else class="q-mt-md" align="center">
               <q-file
                 class="q-mt-lg"
                 filled
@@ -119,12 +203,15 @@
 
           <template v-slot:message>
             <q-banner v-if="step === 1 || step === 2" class="bg-primary text-white q-px-lg">
-              Enviar documentos
+              Documentos do motorista
             </q-banner>
           </template>
         </q-stepper>
       </q-card>
     </q-dialog>
+    <JanelaConfirmacao v-model="dialog.confirmacao" @confirm="mudarStatusDocumento('aprovado')">
+      Deseja realmente aprovar o ducmento?
+    </JanelaConfirmacao>
   </section>
 </template>
 
@@ -133,6 +220,7 @@ import { computed, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { api } from 'boot/axios'
 import CardPerfilUsuario from 'src/components/usuarios/CardPerfilUsuario.vue'
+import JanelaConfirmacao from 'src/components/JanelaConfirmacao.vue'
 
 // PROPS
 const props = defineProps({
@@ -157,40 +245,49 @@ const pagination = ref({
   page: 1,
   rowsPerPage: 5,
 })
+const reprovar = ref(false)
 const file = ref(null)
 const step = ref(1)
 const stepper = ref(null)
+const documentoId = ref('')
 const documentoSelecionado = ref({})
 const motoristaDocumentos = ref([])
+const dialog = ref({
+  confirmacao: false,
+})
 
 const data = ref([
   {
     id: '',
     titulo: 'CNH',
-    documento: 'cnh',
+    tipo_documento: 'cnh',
     descricao: 'CARTEIRA NACIONAL DE HABILITAÇÃO',
     status: '',
+    observacao: '',
   },
   {
     id: '',
     titulo: 'VEÍCULO - CRLV',
-    documento: 'crlv',
+    tipo_documento: 'crlv',
     descricao: 'CERTIFICADO DE REGISTRO E LICENCIAMENTE DO VEÍCULO',
     status: '',
+    observacao: '',
   },
   {
     id: '',
     titulo: 'NADA CONSTA',
-    documento: 'nada_consta',
+    tipo_documento: 'nada_consta',
     descricao: 'CERTIDÃO NEGATIVA DE ANTECEDENTES CRIMINAIS',
     status: '',
+    observacao: '',
   },
   {
     id: '',
     titulo: 'SEGURO',
-    documento: 'seguro_obrigatorio',
+    tipo_documento: 'seguro_obrigatorio',
     descricao: 'SEGURO OBRIGATÓRIO',
     status: '',
+    observacao: '',
   },
 ])
 
@@ -206,13 +303,46 @@ const columns = [
   },
 ]
 
+function dataInicial() {
+  data.value = [
+    {
+      id: '',
+      titulo: 'CNH',
+      tipo_documento: 'cnh',
+      descricao: 'CARTEIRA NACIONAL DE HABILITAÇÃO',
+      status: '',
+    },
+    {
+      id: '',
+      titulo: 'VEÍCULO - CRLV',
+      tipo_documento: 'crlv',
+      descricao: 'CERTIFICADO DE REGISTRO E LICENCIAMENTE DO VEÍCULO',
+      status: '',
+    },
+    {
+      id: '',
+      titulo: 'NADA CONSTA',
+      tipo_documento: 'nada_consta',
+      descricao: 'CERTIDÃO NEGATIVA DE ANTECEDENTES CRIMINAIS',
+      status: '',
+    },
+    {
+      id: '',
+      titulo: 'SEGURO',
+      tipo_documento: 'seguro_obrigatorio',
+      descricao: 'SEGURO OBRIGATÓRIO',
+      status: '',
+    },
+  ]
+}
+
 function beforeShow() {
-  // data.value = []
+  dataInicial()
   getMotoristaDocumentos()
 }
 
 function onBeforeHide() {
-  data.value = []
+  dataInicial()
 }
 
 // ACTION
@@ -229,16 +359,11 @@ const badgeColor = (status) => {
   return 'grey'
 }
 
-// const onRequest = async (props) => {
-//   console.log(props, 'props')
-//   await request(props)
-// }
-
 function subirArquivo() {
   const data = new FormData()
   if (file.value) data.append('arquivo', file.value)
   data.append('motorista_id', props.usuario?.id)
-  data.append('documento', documentoSelecionado.value?.documento)
+  data.append('tipo_documento', documentoSelecionado.value?.tipo_documento)
   api
     .post('/motorista-documentos', data, {
       headers: {
@@ -247,7 +372,6 @@ function subirArquivo() {
     })
     .then((res) => {
       $q.notify({ type: 'positive', position: 'top-right', message: res.data.message })
-      // emit('onRequest')
       step.value = 1
       documentoSelecionado.value = {}
       getMotoristaDocumentos()
@@ -255,6 +379,25 @@ function subirArquivo() {
     .catch((err) => {
       $q.notify({ type: 'negative', message: err.response?.data?.message })
     })
+}
+
+async function mudarStatusDocumento(status) {
+  try {
+    const response = await api.put(`mudar-status-documento/${documentoId.value}`, {
+      status: status,
+    })
+    console.log(response, 'response')
+    step.value = 1
+    documentoSelecionado.value = {}
+    getMotoristaDocumentos()
+    $q.notify({ type: 'positive', message: response.data.message })
+  } catch (err) {
+    console.log(err, 'err')
+    // model.value = false
+    $q.notify({ type: 'negative', message: err.message })
+  } finally {
+    // model.value = false
+  }
 }
 
 const getMotoristaDocumentos = async (payload) => {
@@ -269,17 +412,18 @@ const getMotoristaDocumentos = async (payload) => {
         rowsPerPage: rowsPerPage,
       },
     })
-
     motoristaDocumentos.value = response.data.data
-
+    console.log(data.value, 'data')
     console.log(motoristaDocumentos, 'motoristaDocumentos motoristaDocumentos')
 
     // 🔥 cria um map para busca rápida por documento
-    const documentosMap = new Map(motoristaDocumentos.value.map((item) => [item.documento, item]))
+    const documentosMap = new Map(
+      motoristaDocumentos.value.map((item) => [item.tipo_documento, item])
+    )
 
     // 🔥 faz o merge mantendo estrutura original do data
     data.value = data.value.map((item) => {
-      const doc = documentosMap.get(item.documento)
+      const doc = documentosMap.get(item.tipo_documento)
 
       if (doc) {
         return {

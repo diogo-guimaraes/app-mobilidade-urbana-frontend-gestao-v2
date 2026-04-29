@@ -83,7 +83,7 @@
                   <q-spinner-hourglass />
                 </template>
               </q-btn>
-
+              <!-- 
               <q-btn
                 @click=";(dialog.documentos = true), (usuarioId = props.row.id)"
                 flat
@@ -93,7 +93,7 @@
                 <q-tooltip transition-show="flip-right" transition-hide="flip-left">
                   Documentos
                 </q-tooltip>
-              </q-btn>
+              </q-btn> -->
 
               <q-btn @click="openExcluir(props.row)" dense flat icon="delete">
                 <q-tooltip transition-show="flip-right" transition-hide="flip-left">

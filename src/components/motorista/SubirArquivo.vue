@@ -22,7 +22,7 @@
                   flat
                   :rows="data"
                   :columns="columns"
-                  row-key="documento"
+                  row-key="tipo_documento"
                   hide-bottom
                   hide-header
                   selection="single"
@@ -42,7 +42,9 @@
                           </q-item-section>
 
                           <q-item-section>
-                            <q-item-label class="text-h6"> {{ props.row.documento }}</q-item-label>
+                            <q-item-label class="text-h6">
+                              {{ props.row.tipo_documento }}</q-item-label
+                            >
                             <q-item-label class="estilo-coluna" caption>
                               {{ props.row.descricao }}
                             </q-item-label>
@@ -81,7 +83,7 @@
                   </q-item-section>
 
                   <q-item-section>
-                    <q-item-label class="text-h6"> {{ selected[0]?.documento }} </q-item-label>
+                    <q-item-label class="text-h6"> {{ selected[0]?.tipo_documento }} </q-item-label>
                     <q-item-label class="estilo-coluna" caption>
                       {{ selected[0]?.descricao }}
                     </q-item-label>
@@ -163,19 +165,23 @@ const selected = ref([])
 const data = ref([
   {
     documento: 'CNH',
+    tipo_documento: 'cnh',
     descricao: 'CARTEIRA NACIONAL DE HABILITAÇÃO',
   },
 
   {
     documento: 'SEGURO',
+    tipo_documento: 'seguro_obrigatorio',
     descricao: 'SEGURO OBRIGATÓRIO',
   },
   {
-    documento: 'VEÍCULO - CRLV',
+    documento: 'CRLV',
+    tipo_documento: 'crlv',
     descricao: 'CERTIFICADO DE REGISTRO E LICENCIAMENTE DO VEÍCULO',
   },
   {
     documento: 'NADA CONSTA',
+    tipo_documento: 'nada_consta',
     descricao: 'CERTIDÃO NEGATIVA DE ANTECEDENTES CRIMINAIS',
   },
 ])
@@ -203,7 +209,7 @@ function request() {
   const data = new FormData()
   if (file.value) data.append('arquivo', file.value)
   data.append('motorista_id', props.usuarioId)
-  data.append('documento', selected.value[0]?.documento)
+  data.append('tipo_documento', selected.value[0]?.tipo_documento)
   api
     .post('/motorista-documentos', data, {
       headers: {
