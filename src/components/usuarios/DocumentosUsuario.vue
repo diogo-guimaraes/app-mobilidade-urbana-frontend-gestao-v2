@@ -1,102 +1,90 @@
 <template>
   <section>
+    <SubirArquivo
+      @updated="getMotoristaDocumentos()"
+      v-model="dialog.envairArquivo"
+      :usuarioId="usuario.id"
+      :documento="documentoSelecionado"
+    />
     <q-dialog v-model="model" @before-show="beforeShow" @before-hide="onBeforeHide">
       <q-card style="width: 600px; max-width: 50vw">
         <!-- HEADER -->
-        <q-stepper v-model="step" ref="stepper" color="primary" animated>
-          <q-step :name="1" title="Documentos" icon="settings" :done="step > 1">
-            <!-- <pre>
-              {{ data }}
-            </pre> -->
-            <!-- <q-card style="border-style: none"> -->
-            <CardPerfilUsuario :bordered="true" :usuario="props.usuario" />
-            <!-- </q-card> -->
 
-            <q-table
-              v-if="step === 1"
-              class="q-mt-sm"
-              bordered
-              flat
-              :rows="data"
-              :columns="columns"
-              row-key="tipo_documento"
-              hide-bottom
-              hide-header
-            >
-              <template v-slot:body="props">
-                <q-tr @click="selectRow(props.row)" class="cursor-pointer" :props="props">
-                  <q-td key="documento" :props="props">
-                    <q-item>
-                      <q-item-section top avatar>
-                        <q-avatar icon="attach_file" size="xl" rounded> </q-avatar>
-                      </q-item-section>
-                      <q-item-section>
-                        <q-item-label class="text-h6"> {{ props.row.titulo }}</q-item-label>
-                        <q-item-label class="estilo-coluna" caption>
-                          {{ props.row.descricao }}
-                        </q-item-label>
-                      </q-item-section>
+        <!-- <q-card style="border-style: none"> -->
+        <CardPerfilUsuario class="q-mt-md" :usuario="props.usuario" />
+        <!-- </q-card> -->
 
-                      <q-item-section side top>
-                        <q-item-label caption>situação</q-item-label>
-                        <q-item-label caption>
-                          <q-badge
-                            :color="badgeColor(props.row.status)"
-                            :label="props.row.status ? props.row.status : 'Não enviado'"
-                          />
-                        </q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </q-td>
-                  <q-td key="acoes">
-                    <q-icon
-                      color="grey"
-                      size="sm"
-                      :name="props.row.id ? 'arrow_forward_ios' : 'upload'"
-                    >
-                      <q-tooltip
-                        v-if="!props.row.id"
-                        transition-show="flip-right"
-                        transition-hide="flip-left"
-                      >
-                        enviar arquivo
-                      </q-tooltip>
-                    </q-icon>
-                  </q-td>
-                </q-tr>
-              </template>
-            </q-table>
-          </q-step>
-
-          <q-step :name="2" title="" icon="info" :done="step > 2">
-            <q-icon
-              @click="$refs.stepper.previous()"
-              size="30px"
-              name="arrow_back"
-              color="primary"
-              class="cursor-pointer"
-            />
-            <q-item class="q-mt-md">
-              <q-item-section top avatar>
-                <q-avatar icon="attach_file" size="xl" rounded> </q-avatar>
-              </q-item-section>
-              <q-item-section>
-                <q-item-label class="text-h6"> {{ documentoSelecionado?.titulo }}</q-item-label>
-                <q-item-label class="estilo-coluna" caption>
-                  {{ documentoSelecionado?.descricao }}
-                </q-item-label>
-              </q-item-section>
-              <q-item-label caption>
-                <q-badge
-                  :color="badgeColor(documentoSelecionado?.status)"
-                  :label="
-                    documentoSelecionado?.status ? documentoSelecionado?.status : 'Não enviado'
-                  "
-                />
-
+        <q-table
+          class="q-mt-sm q-mb-sm"
+          bordered
+          flat
+          :rows="data"
+          :columns="columns"
+          row-key="tipo_documento"
+          hide-bottom
+          hide-header
+        >
+          <!-- <template #top>
+            <CardPerfilUsuario :usuario="props.usuario" />
+          </template> -->
+          <template v-slot:body="props">
+            <q-tr class="cursor-pointer" :props="props">
+              <q-td key="documento" :props="props">
+                <q-item>
+                  <q-item-section top avatar>
+                    <q-avatar icon="attach_file" size="xl" rounded> </q-avatar>
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label class="text-h6"> {{ props.row.titulo }}</q-item-label>
+                    <q-item-label class="estilo-coluna" caption>
+                      {{ props.row.descricao }}
+                    </q-item-label>
+                    <q-item-label caption>
+                      <q-badge
+                        :color="badgeColor(props.row.status)"
+                        :label="props.row.status ? props.row.status : 'Não enviado'"
+                      />
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-td>
+              <q-td :props="props" key="acoes">
                 <q-btn
-                  v-if="documentoSelecionado?.status"
-                  class="q-ml-lg"
+                  v-if="props.row.tipo_documento"
+                  @click="
+                    () => {
+                      documentoSelecionado = props.row
+                      dialog.reprovarDocumento = true
+                    }
+                  "
+                  flat
+                  text-color="red"
+                  round
+                  icon="close"
+                >
+                  <q-tooltip transition-show="flip-right" transition-hide="flip-left">
+                    reprovar documento
+                  </q-tooltip>
+                </q-btn>
+                <q-btn
+                  v-if="!props.row.status"
+                  @click="
+                    () => {
+                      documentoSelecionado = props.row
+                      dialog.confirmacao = true
+                    }
+                  "
+                  flat
+                  text-color="green"
+                  round
+                  icon="done"
+                >
+                  <q-tooltip transition-show="flip-right" transition-hide="flip-left">
+                    aprovar documento
+                  </q-tooltip>
+                </q-btn>
+                <q-btn
+                  v-if="props.row.status"
                   @click.stop.prevent
                   title="Menu"
                   icon="linear_scale"
@@ -107,110 +95,80 @@
                   <q-menu>
                     <q-list style="min-width: 100px">
                       <q-item clickable v-close-popup>
-                        <q-item-section>Ver detalhes</q-item-section>
+                        <q-item-section>Reprovar documento</q-item-section>
                       </q-item>
                       <q-item clickable v-close-popup>
-                        <q-item-section> reprovar documento </q-item-section>
+                        <q-item-section>Excluir documento</q-item-section>
                       </q-item>
+
                       <q-item clickable v-close-popup>
-                        <q-item-section>excluir</q-item-section>
+                        <q-item-section>Baixar documento</q-item-section>
                       </q-item>
                     </q-list>
                   </q-menu>
                 </q-btn>
-              </q-item-label>
-            </q-item>
 
-            <div align="center" class="q-mt-md" v-if="documentoSelecionado?.status">
-              <div v-if="documentoSelecionado?.status === 'em_analise'" class="q-pa-md q-gutter-sm">
-                <div v-if="reprovar">
-                  <q-input
-                    dense
-                    outlined
-                    autogrow
-                    class="full-width q-px-md q-mb-md"
-                    v-model="documentoSelecionado.observacao"
-                    type="textarea"
-                    bottom-slots
-                    counter
-                    maxlength="2000"
+                <q-icon
+                  @click="
+                    () => {
+                      documentoSelecionado.value = props.row
+                      dialog.envairArquivo = true
+                    }
+                  "
+                  class="q-ml-lg"
+                  color="grey"
+                  size="sm"
+                  :name="props.row.id ? 'arrow_forward_ios' : 'upload'"
+                >
+                  <q-tooltip
+                    v-if="!props.row.id"
+                    transition-show="flip-right"
+                    transition-hide="flip-left"
                   >
-                    <template v-slot:after>
-                      <q-btn
-                        @click="reprovar = true"
-                        style="width: 100px"
-                        dense
-                        color="red"
-                        label="REPROVAR"
-                      />
-                    </template>
-
-                    <template v-slot:hint> Caracteres </template>
-                  </q-input>
-                </div>
-
-                <div v-else>
-                  <q-btn
-                    @click="reprovar = true"
-                    style="width: 100px"
-                    dense
-                    color="red"
-                    label="REPROVAR"
-                  />
-                  <q-btn
-                    style="width: 100px"
-                    dense
-                    @click="
-                      () => {
-                        documentoId = documentoSelecionado?.id
-                        dialog.confirmacao = true
-                      }
-                    "
-                    color="green"
-                    label="APROVAR"
-                  />
-                </div>
-                <!-- <q-btn color="amber" glossy label="Amber" /> -->
-              </div>
-            </div>
-
-            <div v-else class="q-mt-md" align="center">
-              <q-file
-                class="q-mt-lg"
-                filled
-                bottom-slots
-                v-model="file"
-                label="Selecione o arquivo"
-                counter
-                max-files="1"
-              >
-                <template v-slot:before>
-                  <q-icon name="upload_file" />
-                </template>
-                <template v-slot:append>
-                  <q-btn round dense flat icon="add" @click.stop.prevent />
-                </template>
-              </q-file>
-              <q-btn
-                v-if="file"
-                @click="subirArquivo()"
-                label="Enviar"
-                color="primary"
-                class="q-mt-md"
-              />
-            </div>
-          </q-step>
-
-          <template v-slot:message>
-            <q-banner v-if="step === 1 || step === 2" class="bg-primary text-white q-px-lg">
-              Documentos do motorista
-            </q-banner>
+                    enviar arquivo
+                  </q-tooltip>
+                </q-icon>
+              </q-td>
+            </q-tr>
           </template>
-        </q-stepper>
+        </q-table>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="dialog.reprovarDocumento">
+      <q-card style="width: 700px; max-width: 80vw">
+        <q-card-section>
+          <CardPerfilDocumento :documento="documentoSelecionado" />
+          <q-form @submit.prevent="onSubmit">
+            <q-input
+              label="Observação"
+              dense
+              outlined
+              autogrow
+              class="full-width q-px-md q-mt-md q-mb-md"
+              v-model="documentoSelecionado.observacao"
+              type="textarea"
+              bottom-slots
+              counter
+              maxlength="2000"
+              :rules="[(val) => val.length >= 3 || 'Campo obrigatório']"
+            >
+              <template v-slot:hint> Caracteres </template>
+            </q-input>
+            <div class="q-mt-md" align="center">
+              <q-btn type="submit" icon="close" color="red" label="REPROVAR DOCUMENTO" />
+            </div>
+          </q-form>
+        </q-card-section>
       </q-card>
     </q-dialog>
     <JanelaConfirmacao v-model="dialog.confirmacao" @confirm="mudarStatusDocumento('aprovado')">
       Deseja realmente aprovar o ducmento?
+    </JanelaConfirmacao>
+    <JanelaConfirmacao
+      v-model="dialog.confirmacaoReprovarDocumento"
+      @confirm="mudarStatusDocumento('reprovado')"
+    >
+      Deseja realmente reprovar o ducmento?
     </JanelaConfirmacao>
   </section>
 </template>
@@ -221,6 +179,8 @@ import { useQuasar } from 'quasar'
 import { api } from 'boot/axios'
 import CardPerfilUsuario from 'src/components/usuarios/CardPerfilUsuario.vue'
 import JanelaConfirmacao from 'src/components/JanelaConfirmacao.vue'
+import SubirArquivo from 'src/components/motorista/SubirArquivo.vue'
+import CardPerfilDocumento from 'src/components/motorista/CardPerfilDocumento.vue'
 
 // PROPS
 const props = defineProps({
@@ -245,15 +205,15 @@ const pagination = ref({
   page: 1,
   rowsPerPage: 5,
 })
-const reprovar = ref(false)
-const file = ref(null)
-const step = ref(1)
-const stepper = ref(null)
-const documentoId = ref('')
-const documentoSelecionado = ref({})
+const documentoSelecionado = ref({
+  observacao: '',
+})
 const motoristaDocumentos = ref([])
 const dialog = ref({
   confirmacao: false,
+  envairArquivo: false,
+  reprovarDocumento: false,
+  confirmacaoReprovarDocumento: false,
 })
 
 const data = ref([
@@ -311,6 +271,7 @@ function dataInicial() {
       tipo_documento: 'cnh',
       descricao: 'CARTEIRA NACIONAL DE HABILITAÇÃO',
       status: '',
+      observacao: '',
     },
     {
       id: '',
@@ -318,6 +279,7 @@ function dataInicial() {
       tipo_documento: 'crlv',
       descricao: 'CERTIFICADO DE REGISTRO E LICENCIAMENTE DO VEÍCULO',
       status: '',
+      observacao: '',
     },
     {
       id: '',
@@ -325,6 +287,7 @@ function dataInicial() {
       tipo_documento: 'nada_consta',
       descricao: 'CERTIDÃO NEGATIVA DE ANTECEDENTES CRIMINAIS',
       status: '',
+      observacao: '',
     },
     {
       id: '',
@@ -332,8 +295,12 @@ function dataInicial() {
       tipo_documento: 'seguro_obrigatorio',
       descricao: 'SEGURO OBRIGATÓRIO',
       status: '',
+      observacao: '',
     },
   ]
+}
+function onSubmit() {
+  dialog.value.confirmacaoReprovarDocumento = true
 }
 
 function beforeShow() {
@@ -345,13 +312,6 @@ function onBeforeHide() {
   dataInicial()
 }
 
-// ACTION
-
-function selectRow(row) {
-  documentoSelecionado.value = row
-  stepper.value.next()
-}
-
 const badgeColor = (status) => {
   if (status === 'aprovado') return 'green'
   if (status === 'reprovado') return 'red'
@@ -359,38 +319,18 @@ const badgeColor = (status) => {
   return 'grey'
 }
 
-function subirArquivo() {
-  const data = new FormData()
-  if (file.value) data.append('arquivo', file.value)
-  data.append('motorista_id', props.usuario?.id)
-  data.append('tipo_documento', documentoSelecionado.value?.tipo_documento)
-  api
-    .post('/motorista-documentos', data, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-    .then((res) => {
-      $q.notify({ type: 'positive', position: 'top-right', message: res.data.message })
-      step.value = 1
-      documentoSelecionado.value = {}
-      getMotoristaDocumentos()
-    })
-    .catch((err) => {
-      $q.notify({ type: 'negative', message: err.response?.data?.message })
-    })
-}
-
 async function mudarStatusDocumento(status) {
   try {
-    const response = await api.put(`mudar-status-documento/${documentoId.value}`, {
+    console.log('documentoSelecionado.value', documentoSelecionado.value)
+    const response = await api.put(`mudar-status-documento/${documentoSelecionado.value.id}`, {
+      observacao: documentoSelecionado.value.observacao,
       status: status,
     })
     console.log(response, 'response')
-    step.value = 1
+    dialog.value.reprovarDocumento = false
     documentoSelecionado.value = {}
     getMotoristaDocumentos()
-    $q.notify({ type: 'positive', message: response.data.message })
+    $q.notify({ type: 'positive', position: 'top-right', message: response.data.message })
   } catch (err) {
     console.log(err, 'err')
     // model.value = false

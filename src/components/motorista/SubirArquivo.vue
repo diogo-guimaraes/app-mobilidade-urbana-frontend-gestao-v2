@@ -4,131 +4,67 @@
       <q-card style="width: 700px; max-width: 80vw">
         <!-- HEADER -->
         <q-toolbar>
-          <q-avatar rounded size="lg" icon="file_present" color="primary" text-color="white" />
+          <!-- <q-avatar rounded size="lg" icon="file_present" color="primary" text-color="white" /> -->
           <q-toolbar-title>
-            <span class="text-weight-bold">Enviar documentos</span>
+            <span class="text-weight-bold">Enviar documento</span>
           </q-toolbar-title>
 
           <q-btn flat round dense icon="close" v-close-popup />
         </q-toolbar>
-
+        <pre>
+      {{ documento.value }}
+    </pre
+        >
         <q-separator />
-
         <div class="q-pa-md">
-          <q-stepper v-model="step" ref="stepper" color="primary" animated>
-            <q-step :name="1" title="Seleção do tipo de documento" icon="settings" :done="step > 1">
-              <q-card>
-                <q-table
-                  flat
-                  :rows="data"
-                  :columns="columns"
-                  row-key="tipo_documento"
-                  hide-bottom
-                  hide-header
-                  selection="single"
-                  v-model:selected="selected"
-                >
-                  <template v-slot:body="props">
-                    <q-tr :props="props">
-                      <q-td>
-                        <q-checkbox v-model="props.selected" />
-                      </q-td>
-                      <q-td key="name" :props="props">
-                        <q-item>
-                          <q-item-section top avatar>
-                            <q-avatar rounded>
-                              <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
-                            </q-avatar>
-                          </q-item-section>
+          <q-card-section>
+            <q-item>
+              <q-item-section top avatar>
+                <q-avatar icon="attach_file" size="xl" rounded> </q-avatar>
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-h6"> {{ documento.value.titulo }}</q-item-label>
+                <q-item-label class="estilo-coluna" caption>
+                  {{ documento.value.descricao }}
+                </q-item-label>
+              </q-item-section>
 
-                          <q-item-section>
-                            <q-item-label class="text-h6">
-                              {{ props.row.tipo_documento }}</q-item-label
-                            >
-                            <q-item-label class="estilo-coluna" caption>
-                              {{ props.row.descricao }}
-                            </q-item-label>
-                          </q-item-section>
-                        </q-item>
-                      </q-td>
-                    </q-tr>
-                  </template>
-                </q-table>
-              </q-card>
-            </q-step>
-
-            <q-step :name="2" title="Selecionar documento" icon="upload_file" :done="step > 2">
+              <!-- <q-item-section side top>
+                        <q-item-label caption>situação</q-item-label>
+                        <q-item-label caption>
+                          <q-badge
+                            :color="badgeColor(documento.value.status)"
+                            :label="documento.value.status ? documento.value.status : 'Não enviado'"
+                          />
+                        </q-item-label>
+                      </q-item-section> -->
+            </q-item>
+            <q-file
+              class="q-mt-lg"
+              filled
+              bottom-slots
+              v-model="file"
+              label="Selecione o arquivo"
+              counter
+              max-files="1"
+            >
+              <template v-slot:before>
+                <q-icon name="upload_file" />
+              </template>
+              <template v-slot:append>
+                <q-btn round dense flat icon="add" @click.stop.prevent />
+              </template>
+            </q-file>
+            <div class="q-mt-md" align="center">
               <q-btn
-                class="q-pa-none"
-                v-if="step > 1"
-                flat
+                v-if="file"
+                @click="request()"
+                label="Enviar"
                 color="primary"
-                @click="$refs.stepper.previous(), (file = null)"
-                label="VOLTAR"
-                icon="arrow_back"
+                class="q-mt-md"
               />
-              <!-- <q-icon
-                @click="$refs.stepper.previous()"
-                size="30px"
-                name="arrow_back"
-                color="primary"
-                class="cursor-pointer"
-              /> -->
-              <q-card-section>
-                <q-item class="q-mt-sm">
-                  <q-item-section top avatar>
-                    <q-avatar rounded>
-                      <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
-                    </q-avatar>
-                  </q-item-section>
-
-                  <q-item-section>
-                    <q-item-label class="text-h6"> {{ selected[0]?.tipo_documento }} </q-item-label>
-                    <q-item-label class="estilo-coluna" caption>
-                      {{ selected[0]?.descricao }}
-                    </q-item-label>
-                  </q-item-section>
-                </q-item>
-                <q-file
-                  class="q-mt-lg"
-                  filled
-                  bottom-slots
-                  v-model="file"
-                  label="Selecione o arquivo"
-                  counter
-                  max-files="1"
-                >
-                  <template v-slot:before>
-                    <q-icon name="upload_file" />
-                  </template>
-                  <template v-slot:append>
-                    <q-btn round dense flat icon="add" @click.stop.prevent />
-                  </template>
-                </q-file>
-                <div class="q-mt-md" align="center">
-                  <q-btn
-                    v-if="file"
-                    @click="request()"
-                    label="Enviar"
-                    color="primary"
-                    class="q-mt-md"
-                  />
-                </div>
-              </q-card-section>
-            </q-step>
-
-            <template v-slot:navigation>
-              <q-stepper-navigation>
-                <q-btn
-                  @click="$refs.stepper.next()"
-                  color="primary"
-                  label="Continue"
-                  v-if="step === 1"
-                  :disable="selected.length ? false : true"
-                />
-              </q-stepper-navigation>
-            </template>
-          </q-stepper>
+            </div>
+          </q-card-section>
         </div>
       </q-card>
     </q-dialog>
@@ -144,10 +80,11 @@ import { api } from 'boot/axios'
 const props = defineProps({
   modelValue: Boolean,
   usuarioId: [String, Number],
+  documento: [Object],
 })
 
 // EMITS
-const emit = defineEmits(['update:modelValue', 'onRequest'])
+const emit = defineEmits(['update:modelValue', 'updated'])
 
 // QUASAR
 const $q = useQuasar()
@@ -160,47 +97,10 @@ const model = computed({
 
 // STATE
 const file = ref(null)
-const step = ref(1)
-const selected = ref([])
-const data = ref([
-  {
-    documento: 'CNH',
-    tipo_documento: 'cnh',
-    descricao: 'CARTEIRA NACIONAL DE HABILITAÇÃO',
-  },
-
-  {
-    documento: 'SEGURO',
-    tipo_documento: 'seguro_obrigatorio',
-    descricao: 'SEGURO OBRIGATÓRIO',
-  },
-  {
-    documento: 'CRLV',
-    tipo_documento: 'crlv',
-    descricao: 'CERTIFICADO DE REGISTRO E LICENCIAMENTE DO VEÍCULO',
-  },
-  {
-    documento: 'NADA CONSTA',
-    tipo_documento: 'nada_consta',
-    descricao: 'CERTIDÃO NEGATIVA DE ANTECEDENTES CRIMINAIS',
-  },
-])
-
-const columns = [
-  {
-    name: 'name',
-    label: 'Documento',
-    align: 'left',
-    field: (row) => row.name,
-    format: (val) => `${val}`,
-  },
-]
-// COMPUTED
 
 // LIFECYCLE
 function beforeShow() {
   file.value = null
-  step.value = 1
 }
 
 // ACTION
@@ -209,7 +109,7 @@ function request() {
   const data = new FormData()
   if (file.value) data.append('arquivo', file.value)
   data.append('motorista_id', props.usuarioId)
-  data.append('tipo_documento', selected.value[0]?.tipo_documento)
+  data.append('tipo_documento', props.documento.value?.tipo_documento)
   api
     .post('/motorista-documentos', data, {
       headers: {
@@ -218,7 +118,7 @@ function request() {
     })
     .then((res) => {
       $q.notify({ type: 'positive', message: res.data.message })
-      emit('onRequest')
+      emit('updated')
       model.value = false
     })
     .catch((err) => {
