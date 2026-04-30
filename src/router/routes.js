@@ -25,10 +25,22 @@ const routes = [
     children: [{ path: '', component: () => import('src/pages/usuarios/PaginaMotoristas.vue') }],
   },
   {
+    path: '/passageiros',
+    component: () => import('layouts/MainLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [{ path: '', component: () => import('src/pages/usuarios/PaginaPassageiros.vue') }],
+  },
+  {
     path: '/veiculos',
     component: () => import('layouts/MainLayout.vue'),
     meta: { requiresAuth: true },
     children: [{ path: '', component: () => import('src/pages/PaginaVeiculos.vue') }],
+  },
+  {
+    path: '/corridas',
+    component: () => import('layouts/MainLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [{ path: '', component: () => import('src/pages/PaginaCorridas.vue') }],
   },
   {
     path: '/:catchAll(.*)*',

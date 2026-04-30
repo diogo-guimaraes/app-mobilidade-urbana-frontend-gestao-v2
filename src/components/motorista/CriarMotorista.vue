@@ -3,159 +3,168 @@
     <q-dialog v-model="model" @before-show="onBeforeShow" @before-hide="beforeHide">
       <q-card style="width: 700px; max-width: 80vw">
         <q-stepper v-model="step" ref="stepper" color="primary" animated>
-          <q-step :name="1" title="Selecione o usuário" icon="settings" :done="step > 1">
-            <q-card>
-              <q-table
-                :rows="usuarios.data"
-                :columns="columns"
-                row-key="id"
-                :pagination="pagination"
-                :loading="loading"
-                @request="onRequest"
-              >
-                <template #top>
-                  <q-space />
-                  <q-input
-                    class="full-width"
-                    filled
-                    dense
-                    debounce="300"
-                    v-model="search"
-                    placeholder="Pesquisar"
-                    @keyup.enter="buscarDados"
-                  >
-                    <template v-if="search" #append>
-                      <q-icon name="close" class="cursor-pointer" @click="clearSearch" />
-                    </template>
-                  </q-input>
-                </template>
+          <q-step
+            class="q-pa-none"
+            :name="1"
+            title="Selecione o usuário"
+            icon="settings"
+            :done="step > 1"
+          >
+            <!-- <q-card> -->
+            <q-table
+              flat
+              :rows="usuarios.data"
+              :columns="columns"
+              row-key="id"
+              :pagination="pagination"
+              :loading="loading"
+              @request="onRequest"
+            >
+              <template #top>
+                <q-space />
+                <q-input
+                  class="full-width"
+                  filled
+                  dense
+                  debounce="300"
+                  v-model="search"
+                  placeholder="Pesquisar"
+                  @keyup.enter="buscarDados"
+                >
+                  <template v-if="search" #append>
+                    <q-icon name="close" class="cursor-pointer" @click="clearSearch" />
+                  </template>
+                </q-input>
+              </template>
 
-                <template #body="props">
-                  <q-tr @click="selectRow(props.row)" class="cursor-pointer" :props="props">
-                    <q-td key="id">{{ props.row.id }}</q-td>
+              <template #body="props">
+                <q-tr @click="selectRow(props.row)" class="cursor-pointer" :props="props">
+                  <q-td key="id">{{ props.row.id }}</q-td>
 
-                    <q-td key="motorista">
-                      <q-item>
-                        <q-item-section top avatar>
-                          <q-avatar v-if="props.row.foto_thumbnail">
-                            <img :src="props.row.foto" />
-                          </q-avatar>
-                          <q-avatar v-else color="primary" text-color="white">
-                            {{ props.row.name.substr(0, 1) }}
-                          </q-avatar>
-                          <q-badge class="q-mt-sm" :color="badgeColor(props.row.status)">
-                            {{ props.row.status }}
-                          </q-badge>
-                        </q-item-section>
+                  <q-td key="motorista">
+                    <q-item>
+                      <q-item-section top avatar>
+                        <q-avatar v-if="props.row.foto_thumbnail">
+                          <img :src="props.row.foto" />
+                        </q-avatar>
+                        <q-avatar v-else color="primary" text-color="white">
+                          {{ props.row.name.substr(0, 1) }}
+                        </q-avatar>
+                        <q-badge class="q-mt-sm" :color="badgeColor(props.row.status)">
+                          {{ props.row.status }}
+                        </q-badge>
+                      </q-item-section>
 
-                        <q-item-section>
-                          <q-item-label class="text-bold"> {{ props.row.name }}</q-item-label>
-                          <q-item-label class="estilo-coluna">
-                            {{ props.row.email }}
-                            <div>CPF: {{ props.row.cpf }}</div>
-                            <div>TEL: {{ props.row.telefone }}</div>
-                          </q-item-label>
-                        </q-item-section>
-                      </q-item>
-                    </q-td>
-                    <q-td key="acoes">
-                      <q-icon color="grey" size="sm" name="arrow_forward_ios" />
-                    </q-td>
-                  </q-tr>
-                </template>
-              </q-table>
-            </q-card>
+                      <q-item-section>
+                        <q-item-label class="text-bold"> {{ props.row.name }}</q-item-label>
+                        <q-item-label class="estilo-coluna">
+                          {{ props.row.email }}
+                          <div>CPF: {{ props.row.cpf }}</div>
+                          <div>TEL: {{ props.row.telefone }}</div>
+                        </q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </q-td>
+                  <q-td key="acoes">
+                    <q-icon color="grey" size="sm" name="arrow_forward_ios" />
+                  </q-td>
+                </q-tr>
+              </template>
+            </q-table>
+            <!-- </q-card> -->
           </q-step>
 
           <q-step :name="2" title="Confirmar registro" icon="upload_file" :done="step > 2">
-            <q-icon
-              @click="$refs.stepper.previous()"
-              size="30px"
-              name="arrow_back"
-              color="primary"
-              class="cursor-pointer"
-            />
-            <q-card-section>
-              <CardPerfilUsuario :usuario="usuario" />
-              <div class="row">
-                <div class="col-md-6 col-12">
-                  <q-item>
-                    <q-input
-                      class="full-width"
-                      v-model="usuario.cnh_numero"
-                      label="Número CNH *"
-                      outlined
-                      dense
-                      :rules="[(val) => val.length >= 11 || 'Campo obrigatório']"
-                      onkeypress="return /[0-9]/i.test(event.key)"
-                      maxlength="11"
-                    />
-                  </q-item>
-                </div>
-                <div class="col-md-6 col-12">
-                  <q-item>
-                    <q-select
-                      v-model="usuario.cnh_categoria"
-                      dense
-                      outlined
-                      class="full-width"
-                      label="Categoira CNH *"
-                      :options="CnhCategorias"
-                      map-options
-                      :rules="[(val) => !!val || 'Campo obrigatório']"
-                    />
-                  </q-item>
-                </div>
-                <div class="col-md-6 col-12">
-                  <q-item>
-                    <q-input
-                      class="full-width"
-                      label="Expiração CNH"
-                      dense
-                      mask="##/##/####"
-                      outlined
-                      v-model="usuario.cnh_expiracao"
-                      :rules="[(data_inicial) => validateDateFormat(data_inicial)]"
-                    >
-                      <template v-slot:append>
-                        <q-icon name="event" class="cursor-pointer">
-                          <q-popup-proxy
-                            ref="qDateProxy"
-                            transition-show="scale"
-                            transition-hide="scale"
-                          >
-                            <q-date
-                              v-model="usuario.cnh_expiracao"
-                              mask="DD/MM/YYYY"
-                              @input="() => inputData()"
-                            ></q-date>
-                          </q-popup-proxy>
-                        </q-icon>
-                      </template>
-                    </q-input>
-                  </q-item>
-                </div>
+            <div class="q-pa-md">
+              <q-icon
+                @click="$refs.stepper.previous()"
+                size="30px"
+                name="arrow_back"
+                color="primary"
+                class="cursor-pointer"
+              />
+              <q-card-section>
+                <CardPerfilUsuario :usuario="usuario" />
+                <div class="row">
+                  <div class="col-md-6 col-12">
+                    <q-item>
+                      <q-input
+                        class="full-width"
+                        v-model="usuario.cnh_numero"
+                        label="Número CNH *"
+                        outlined
+                        dense
+                        :rules="[(val) => val.length >= 11 || 'Campo obrigatório']"
+                        onkeypress="return /[0-9]/i.test(event.key)"
+                        maxlength="11"
+                      />
+                    </q-item>
+                  </div>
+                  <div class="col-md-6 col-12">
+                    <q-item>
+                      <q-select
+                        v-model="usuario.cnh_categoria"
+                        dense
+                        outlined
+                        class="full-width"
+                        label="Categoira CNH *"
+                        :options="CnhCategorias"
+                        map-options
+                        :rules="[(val) => !!val || 'Campo obrigatório']"
+                      />
+                    </q-item>
+                  </div>
+                  <div class="col-md-6 col-12">
+                    <q-item>
+                      <q-input
+                        class="full-width"
+                        label="Expiração CNH"
+                        dense
+                        mask="##/##/####"
+                        outlined
+                        v-model="usuario.cnh_expiracao"
+                        :rules="[(data_inicial) => validateDateFormat(data_inicial)]"
+                      >
+                        <template v-slot:append>
+                          <q-icon name="event" class="cursor-pointer">
+                            <q-popup-proxy
+                              ref="qDateProxy"
+                              transition-show="scale"
+                              transition-hide="scale"
+                            >
+                              <q-date
+                                v-model="usuario.cnh_expiracao"
+                                mask="DD/MM/YYYY"
+                                @input="() => inputData()"
+                              ></q-date>
+                            </q-popup-proxy>
+                          </q-icon>
+                        </template>
+                      </q-input>
+                    </q-item>
+                  </div>
 
-                <div class="col-md-6 col-12">
-                  <q-checkbox
-                    size="md"
-                    :true-value="1"
-                    :false-value="0"
-                    v-model="usuario.ear"
-                    label="POSSIU EAR"
+                  <div class="col-md-6 col-12">
+                    <q-checkbox
+                      size="md"
+                      :true-value="1"
+                      :false-value="0"
+                      v-model="usuario.ear"
+                      label="POSSIU EAR"
+                    />
+                  </div>
+                </div>
+                <div align="center">
+                  <q-btn
+                    icon-right="done"
+                    label="CRIAR MOTORISTA"
+                    color="primary"
+                    class="q-mt-md"
+                    @click="criarMotorista()"
                   />
                 </div>
-              </div>
-              <div align="center">
-                <q-btn
-                  icon-right="done"
-                  label="CRIAR MOTORISTA"
-                  color="primary"
-                  class="full-width q-mt-md"
-                  @click="criarMotorista()"
-                />
-              </div>
-            </q-card-section>
+              </q-card-section>
+            </div>
           </q-step>
 
           <template v-slot:message>
@@ -349,44 +358,8 @@ const onRequest = async (props) => {
 }
 </script>
 
-<style scoped>
-/* CSS ORIGINAL MANTIDO */
-.caption {
-  opacity: 0;
-  transition: linear 1s;
-}
-.caption:hover {
-  opacity: 1;
-}
-.btn {
-  display: inline-block;
-  padding: 6px 12px;
-  margin-bottom: 0;
-  font-size: 25px;
-  font-weight: normal;
-  line-height: 1.42857143;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  cursor: pointer;
-  user-select: none;
-  border: 1px solid transparent;
-  border-radius: 4px;
-}
-.btn-success {
-  color: #fff;
-}
-.fileinput-button {
-  position: relative;
-  overflow: hidden;
-}
-.fileinput-button input {
-  position: absolute;
-  top: 0;
-  right: 0;
-  margin: 0;
-  opacity: 0;
-  font-size: 200px;
-  cursor: pointer;
+<style lang="scss" scoped>
+:deep(.q-stepper__step-inner) {
+  padding: 0 !important;
 }
 </style>

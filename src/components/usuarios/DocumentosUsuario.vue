@@ -28,7 +28,7 @@
             <CardPerfilUsuario :usuario="props.usuario" />
           </template> -->
           <template v-slot:body="props">
-            <q-tr class="cursor-pointer" :props="props">
+            <q-tr :props="props">
               <q-td key="documento" :props="props">
                 <q-item>
                   <q-item-section top avatar>
@@ -50,7 +50,7 @@
               </q-td>
               <q-td :props="props" key="acoes">
                 <q-btn
-                  v-if="props.row.tipo_documento"
+                  v-if="visibilidadeBotoes(props.row.status, 'acao')"
                   @click="
                     () => {
                       documentoSelecionado = props.row
@@ -67,7 +67,7 @@
                   </q-tooltip>
                 </q-btn>
                 <q-btn
-                  v-if="!props.row.status"
+                  v-if="visibilidadeBotoes(props.row.status, 'acao')"
                   @click="
                     () => {
                       documentoSelecionado = props.row
@@ -84,7 +84,7 @@
                   </q-tooltip>
                 </q-btn>
                 <q-btn
-                  v-if="props.row.status"
+                  v-if="visibilidadeBotoes(props.row.status, 'menu')"
                   @click.stop.prevent
                   title="Menu"
                   icon="linear_scale"
@@ -109,16 +109,17 @@
                 </q-btn>
 
                 <q-icon
+                  v-if="visibilidadeBotoes(props.row.status, 'upload')"
                   @click="
                     () => {
                       documentoSelecionado.value = props.row
                       dialog.envairArquivo = true
                     }
                   "
-                  class="q-ml-lg"
+                  class="q-ml-lg cursor-pointer"
                   color="grey"
                   size="sm"
-                  :name="props.row.id ? 'arrow_forward_ios' : 'upload'"
+                  name="upload"
                 >
                   <q-tooltip
                     v-if="!props.row.id"
@@ -128,6 +129,28 @@
                     enviar arquivo
                   </q-tooltip>
                 </q-icon>
+
+                <!-- <q-icon
+                  v-if="visibilidadeBotoes(props.row.status, 'download')"
+                  @click="
+                    () => {
+                      documentoSelecionado.value = props.row
+                      dialog.envairArquivo = true
+                    }
+                  "
+                  class="q-ml-lg cursor-pointer"
+                  color="grey"
+                  size="sm"
+                  name="download"
+                >
+                  <q-tooltip
+                    v-if="!props.row.id"
+                    transition-show="flip-right"
+                    transition-hide="flip-left"
+                  >
+                    baixar arquivo
+                  </q-tooltip>
+                </q-icon> -->
               </q-td>
             </q-tr>
           </template>
@@ -299,6 +322,7 @@ function dataInicial() {
     },
   ]
 }
+
 function onSubmit() {
   dialog.value.confirmacaoReprovarDocumento = true
 }
@@ -310,6 +334,25 @@ function beforeShow() {
 
 function onBeforeHide() {
   dataInicial()
+}
+
+function visibilidadeBotoes(status, tipo) {
+  switch (tipo) {
+    case 'acao':
+      return status === 'em_analise'
+
+    case 'menu':
+      return status === 'aprovado' || status === 'reprovado' || status === 'em_analise'
+
+    case 'download':
+      return status === 'aprovado' || status === 'reprovado' || status === 'em_analise'
+
+    case 'upload':
+      return !status
+
+    default:
+      return false
+  }
 }
 
 const badgeColor = (status) => {

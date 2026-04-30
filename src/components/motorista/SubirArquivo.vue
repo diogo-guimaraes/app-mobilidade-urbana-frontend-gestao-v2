@@ -11,10 +11,10 @@
 
           <q-btn flat round dense icon="close" v-close-popup />
         </q-toolbar>
-        <pre>
+        <!-- <pre>
       {{ documento.value }}
     </pre
-        >
+        > -->
         <q-separator />
         <div class="q-pa-md">
           <q-card-section>
@@ -28,16 +28,6 @@
                   {{ documento.value.descricao }}
                 </q-item-label>
               </q-item-section>
-
-              <!-- <q-item-section side top>
-                        <q-item-label caption>situação</q-item-label>
-                        <q-item-label caption>
-                          <q-badge
-                            :color="badgeColor(documento.value.status)"
-                            :label="documento.value.status ? documento.value.status : 'Não enviado'"
-                          />
-                        </q-item-label>
-                      </q-item-section> -->
             </q-item>
             <q-file
               class="q-mt-lg"
