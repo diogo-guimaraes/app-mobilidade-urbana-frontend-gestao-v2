@@ -32,15 +32,6 @@
             placeholder="Pesquisar"
             @keyup.enter="buscarDados"
           >
-            <template #before>
-              <q-btn
-                icon="add_box"
-                label="CRIAR CORRIDA"
-                color="primary"
-                @click="dialog.criar = true"
-              />
-            </template>
-
             <template v-if="search" #append>
               <q-icon name="close" class="cursor-pointer" @click="clearSearch" />
             </template>
@@ -51,29 +42,82 @@
           <q-tr :props="props">
             <q-td key="id">{{ props.row.id }}</q-td>
 
-            <q-td key="veiculo">
+            <q-td key="corrida">
               <q-item>
-                <q-item-section top avatar>
-                  <q-avatar rounded color="primary" text-color="white" icon="directions_car">
-                  </q-avatar>
-                  <q-badge class="q-mt-sm" :label="props.row.marca" color="grey-7" />
-                </q-item-section>
-
                 <q-item-section>
-                  <q-item-label class="text-bold"> {{ props.row.modelo }}</q-item-label>
-                  <q-item-label class="estilo-coluna">
-                    {{ props.row.renavam }}
-                    <div>PLACA: {{ props.row.placa }}</div>
-                    <div>COR: {{ props.row.cor }}</div>
+                  <q-item-label>
+                    <span class="text-bold">Motorista:</span>
+                    {{ props.row.motorista.user.name }}</q-item-label
+                  >
+                  <q-item-label>
+                    <span class="text-bold"> Passageiro: </span>
+                    {{ props.row.passageiro.user.name }}
                   </q-item-label>
+                  <q-item-label>
+                    <span class="text-bold"> Veículo: </span>
+                    {{ props.row.veiculo.placa }}
+                  </q-item-label>
+                  <div>
+                    <span class="text-bold"> Status: </span>
+                    <q-badge :color="badgeColor(props.row.status)">
+                      {{ props.row.status }}
+                    </q-badge>
+                  </div>
                 </q-item-section>
               </q-item>
             </q-td>
 
-            <q-td key="status">
-              <q-badge :color="badgeColor(props.row.status)">
-                {{ props.row.status }}
-              </q-badge>
+            <q-td class="coluna-delimitada" :props="props" key="destinos">
+              <div v-for="(corrida, index) in props.row.corrida_destinos" :key="index">
+                <q-icon
+                  :color="corInconeDestino(corrida.tipo)"
+                  size="20px"
+                  :name="iconesDestino(corrida.tipo)"
+                />
+                {{ limitarTexto(corrida.endereco, 20) }}
+              </div>
+            </q-td>
+
+            <q-td :props="props" key="valores">
+              <q-item>
+                <q-item-section>
+                  <q-item-label>
+                    <span class="text-bold"> Valor burto: </span>
+                    {{ moedaBrasileira(props.row.corrida_financeiro.valor_bruto) }}</q-item-label
+                  >
+                  <q-item-label>
+                    <span class="text-bold"> Tarifa base: </span>
+                    {{ moedaBrasileira(props.row.corrida_financeiro.tarifa_base) }}
+                  </q-item-label>
+
+                  <q-item-label>
+                    <span class="text-bold"> Taxa espera: </span>
+                    {{ moedaBrasileira(props.row.corrida_financeiro.taxa_espera) }}
+                  </q-item-label>
+
+                  <q-item-label>
+                    <span class="text-bold"> Valor paga: </span>
+                    {{ moedaBrasileira(props.row.corrida_financeiro.valor_pago_passageiro) }}
+                  </q-item-label>
+
+                  <q-item-label>
+                    <span class="text-bold"> Desconto passageiro: </span>
+                    {{
+                      moedaBrasileira(props.row.corrida_financeiro.corrida_desconto.valor_desconto)
+                    }}
+                  </q-item-label>
+
+                  <q-item-label>
+                    <span class="text-bold">Taxa plataforma</span>
+                    {{ moedaBrasileira(props.row.corrida_financeiro.valor_plataforma) }}
+                  </q-item-label>
+
+                  <q-item-label>
+                    <span class="text-bold"> Valor motorista</span>
+                    {{ moedaBrasileira(props.row.corrida_financeiro.valor_motorista) }}
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
             </q-td>
 
             <q-td key="acoes" align="center">
@@ -84,23 +128,6 @@
                 <template v-slot:loading>
                   <q-spinner-hourglass />
                 </template>
-              </q-btn>
-
-              <q-btn
-                @click=";(dialog.documentos = true), (veiculoId = props.row.id)"
-                flat
-                dense
-                icon="groups_2"
-              >
-                <q-tooltip transition-show="flip-right" transition-hide="flip-left">
-                  Documentos
-                </q-tooltip>
-              </q-btn>
-
-              <q-btn @click="openExcluir(props.row)" dense flat icon="delete">
-                <q-tooltip transition-show="flip-right" transition-hide="flip-left">
-                  arquivar
-                </q-tooltip>
               </q-btn>
             </q-td>
           </q-tr>
@@ -144,28 +171,49 @@ const pagination = ref({
 
 const columns = [
   { name: 'id', label: 'ID', field: 'id', align: 'left' },
-  { name: 'veiculo', label: 'Veículo', align: 'left' },
-  // { name: 'modelo', label: 'modelo', field: 'status', align: 'left' },
-  // { name: 'ano_fabricacao', label: 'ano_fabricacao', align: 'center' },
-  // { name: 'ano_modelo', label: 'ano_modelo', field: 'status', align: 'left' },
-  // { name: 'cor', label: 'cor', field: 'status', align: 'left' },
-  // { name: 'placa', label: 'placa', field: 'status', align: 'left' },
-  // { name: 'renavam', label: 'renavam', field: 'status', align: 'left' },
-  // { name: 'categoria', label: 'categoria', field: 'status', align: 'left' },
-  { name: 'status', label: 'status', field: 'status', align: 'left' },
+  { name: 'corrida', label: 'Corrida', align: 'left' },
+  { name: 'destinos', label: 'Destinos', align: 'left' },
+  { name: 'valores', label: 'Valores', align: 'left' },
   { name: 'acoes', label: 'Ações', align: 'center' },
 ]
 
-const badgeColor = (status) => {
-  if (status === 'ativo') return 'green'
-  if (status === 'inativo') return 'orange'
-  if (status === 'pendente') return 'warning'
-  if (status === 'bloqueado') return 'red'
+function moedaBrasileira(value) {
+  if (value === null || value === undefined) return ''
+
+  let valor = Number(value)
+
+  return valor.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
 }
 
-// const toggleGrid = () => {
-//   grid.value = !grid.value
-// }
+const badgeColor = (status) => {
+  if (status === 'solicitada') return 'orange'
+  if (status === 'aceita') return 'primary'
+  if (status === 'em_andamento') return 'secondary'
+  if (status === 'finalizada') return 'green'
+  if (status === 'cancelada') return 'red'
+}
+
+const iconesDestino = (tipo) => {
+  console.log(tipo, 'tipo')
+  if (tipo === 'origem') return 'arrow_circle_up'
+  if (tipo === 'parada') return 'stop_circle'
+  if (tipo === 'destino') return 'arrow_circle_down'
+}
+
+const corInconeDestino = (tipo) => {
+  if (tipo === 'origem') return 'green'
+  if (tipo === 'destino') return 'red'
+}
+
+function limitarTexto(texto, limite) {
+  if (!texto) return ''
+  return texto.length > limite ? texto.slice(0, limite) + '...' : texto
+}
 
 const clearSearch = () => {
   search.value = ''
@@ -176,12 +224,6 @@ const clearSearch = () => {
 const openEditar = (id) => {
   veiculoId.value = id
   dialog.editar = true
-}
-
-const openExcluir = (usuario) => {
-  usuarioSelecionado.value = [usuario]
-  openPress.value = 'arquivar'
-  dialog.excluir = true
 }
 
 const buscarDados = async (props) => {
@@ -220,7 +262,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.estilo-coluna {
+.coluna-delimitada {
   max-width: 200px;
   white-space: normal;
   margin-top: 4px;
